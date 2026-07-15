@@ -1,0 +1,16 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Vitaliti">
+  <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="3.2"></circle>
+  
+  <line x1="20" y1="78" x2="52" y2="46" stroke="currentColor" stroke-width="3" stroke-linecap="round"></line>
+  <line x1="26" y1="84" x2="45" y2="65" stroke="currentColor" stroke-width="3" stroke-linecap="round"></line>
+  <line x1="33" y1="88" x2="47" y2="74" stroke="currentColor" stroke-width="3" stroke-linecap="round"></line>
+  
+  <path d="M28 47 H44 L52 39 H60" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+  <circle cx="28" cy="47" r="4.2" fill="currentColor"></circle>
+  <circle cx="63" cy="39" r="4.2" fill="currentColor"></circle>
+  
+  <path d="M55 52 H66 V64" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+  <circle cx="52" cy="52" r="4.2" fill="currentColor"></circle>
+  <circle cx="66" cy="68" r="4.2" fill="currentColor"></circle>
+  <circle cx="40" cy="60" r="3.4" fill="currentColor"></circle>
+</svg>
