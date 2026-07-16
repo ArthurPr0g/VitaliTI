@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#0a1526">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0a1526"/>
+    <g transform="translate(600 360)" fill="none" stroke="#38bdf8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+      <circle r="150" stroke="#e6edf7"/>
+      <line x1="-100" y1="93" x2="7" y2="-14"/>
+      <line x1="-80" y1="113" x2="-17" y2="50"/>
+      <line x1="-57" y1="127" x2="-10" y2="80"/>
+      <path d="M-73 -10 H-20 L7 -37 H33"/>
+      <path d="M17 7 H53 V47"/>
+      <circle cx="-73" cy="-10" r="14" fill="#38bdf8" stroke="none"/>
+      <circle cx="43" cy="-37" r="14" fill="#38bdf8" stroke="none"/>
+      <circle cx="7" cy="7" r="14" fill="#38bdf8" stroke="none"/>
+      <circle cx="53" cy="60" r="14" fill="#38bdf8" stroke="none"/>
+    </g>
+    <text x="600" y="600" text-anchor="middle" font-family="'Space Grotesk',sans-serif" font-size="80" font-weight="700" fill="#ffffff">VITALI<tspan fill="#38bdf8">TI</tspan></text>
+  </svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: 'Manrope', sans-serif; color: #0f2147; background: #ffffff; -webkit-font-smoothing: antialiased; }
+  a { color: #1d4ed8; text-decoration: none; }
+  a:hover { color: #2f6bff; }
+  ::selection { background: #2f6bff; color: #fff; }
+  @keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+  @keyframes floatY2 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(12px); } }
+  @keyframes glow { 0%,100% { opacity: .55; transform: translate(0,0) scale(1); } 50% { opacity: .85; transform: translate(20px,-20px) scale(1.12); } }
+  @keyframes glow2 { 0%,100% { opacity: .4; transform: translate(0,0) scale(1); } 50% { opacity: .7; transform: translate(-24px,18px) scale(1.15); } }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .cli-feed:hover .cli-track { animation-play-state: paused; }
+  @media (max-width: 640px) { .cli-track > div { flex-basis: 78vw !important; } }
+  @keyframes spinSlow { to { transform: rotate(360deg); } }
+  .lucide { width: 100%; height: 100%; }
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  img { max-width: 100%; }
+  @media (max-width: 860px) {
+    [style*="padding: 0 28px"] { padding-left: 18px !important; padding-right: 18px !important; }
+    header nav { gap: 12px !important; }
+    #main-nav { display: none !important; }
+    #nav-toggle { display: flex !important; }
+    [style*="1.05fr .95fr"] { grid-template-columns: 1fr !important; gap: 36px !important; }
+    [style*=".95fr 1.05fr"] { grid-template-columns: 1fr !important; gap: 40px !important; }
+    [style*="repeat(3, 1fr)"], [style*="repeat(3,1fr)"] { grid-template-columns: 1fr !important; }
+    [style*="repeat(4, 1fr)"], [style*="repeat(4,1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+    [style*="1fr 1fr"] { grid-template-columns: 1fr !important; }
+    h1 { font-size: 34px !important; line-height: 1.12 !important; }
+    h2 { font-size: 28px !important; }
+    [style*="150px 0 110px"] { padding: 104px 0 52px !important; }
+    [style*="100px 0"] { padding-top: 56px !important; padding-bottom: 56px !important; }
+    [style*="100px 0 80px"] { padding-bottom: 44px !important; }
+    [style*="96px 0"] { padding-top: 56px !important; padding-bottom: 56px !important; }
+    [style*="440px"] { height: 260px !important; }
+    [style*="460px"] { height: 300px !important; }
+  }
+  @media (max-width: 520px) {
+    [style*="animation: floatY 6s"], [style*="animation: floatY2 7s"],
+    [style*="animation:floatY 6s"], [style*="animation:floatY2 7s"] { display: none !important; }
+    [style*="repeat(4, 1fr)"], [style*="repeat(4,1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+    h1 { font-size: 28px !important; }
+    h2 { font-size: 24px !important; }
+  }
+</style>
+</helmet>
+
+<div style="overflow-x:hidden;background:#ffffff">
+
+<header id="site-header" style="position:fixed;top:0;left:0;right:0;z-index:50;transition:background .35s ease, box-shadow .35s ease, padding .35s ease;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid #eef2f7;padding:16px 0">
+  <div style="max-width:1200px;margin:0 auto;padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+    <a href="#top" style="display:flex;align-items:center">
+      <img src="assets/logo-vitaliti-clean.png" alt="Vitaliti Soluções Tecnológicas" style="height:46px;width:auto;display:block">
+    </a>
+    <nav id="main-nav" style="display:flex;align-items:center;gap:32px">
+      <a href="#servicos" class="navlink" style="color:#475569;font-weight:600;font-size:15px">Serviços</a>
+      <a href="#clientes" class="navlink" style="color:#475569;font-weight:600;font-size:15px">Clientes</a>
+      <a href="#sobre" class="navlink" style="color:#475569;font-weight:600;font-size:15px">Sobre</a>
+      <a href="#faq" class="navlink" style="color:#475569;font-weight:600;font-size:15px">FAQ</a>
+      <a href="https://wa.me/5562992062304?text=Ol%C3%A1!%20Gostaria%20de%20um%20or%C3%A7amento%20com%20a%20Vitaliti." target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;font-weight:700;font-size:14px;padding:11px 20px;border-radius:999px;box-shadow:0 8px 22px -8px rgba(29,78,216,.65)">
+        <span style="width:17px;height:17px;display:block"><svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><path d="M12 2a10 10 0 0 0-8.6 15.06L2 22l5.06-1.33A10 10 0 1 0 12 2zm0 18.2c-1.5 0-2.97-.4-4.25-1.16l-.3-.18-3 .79.8-2.92-.2-.31A8.2 8.2 0 1 1 20.2 12 8.2 8.2 0 0 1 12 20.2zm4.5-5.8c-.25-.13-1.47-.72-1.7-.8-.23-.09-.4-.13-.56.12-.17.25-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.16.04-.31-.02-.43-.06-.13-.56-1.35-.77-1.85-.2-.48-.4-.42-.56-.42h-.48c-.16 0-.42.06-.64.31-.22.25-.85.83-.85 2.02 0 1.19.87 2.34.99 2.5.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg></span>Pedir orçamento
+      </a>
+    </nav>
+    <button id="nav-toggle" aria-label="Abrir menu" onClick="{{ toggleMenu }}" style="display:none;background:none;border:0;padding:8px;cursor:pointer;color:#0f2147;width:44px;height:44px;align-items:center;justify-content:center">
+      <span style="width:26px;height:26px;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span>
+    </button>
+  </div>
+  <div id="mobile-menu" style="display:none;flex-direction:column;background:#fff;border-top:1px solid #eef2f7;padding:8px 18px 18px">
+    <a href="#servicos" onClick="{{ closeMenu }}" style="color:#0f2147;font-weight:600;font-size:17px;padding:15px 4px;border-bottom:1px solid #f1f4f8">Serviços</a>
+    <a href="#clientes" onClick="{{ closeMenu }}" style="color:#0f2147;font-weight:600;font-size:17px;padding:15px 4px;border-bottom:1px solid #f1f4f8">Clientes</a>
+    <a href="#sobre" onClick="{{ closeMenu }}" style="color:#0f2147;font-weight:600;font-size:17px;padding:15px 4px;border-bottom:1px solid #f1f4f8">Sobre</a>
+    <a href="#faq" onClick="{{ closeMenu }}" style="color:#0f2147;font-weight:600;font-size:17px;padding:15px 4px">FAQ</a>
+    <a href="https://wa.me/5562992062304?text=Ol%C3%A1!%20Gostaria%20de%20um%20or%C3%A7amento%20com%20a%20Vitaliti." target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;font-weight:700;font-size:16px;padding:15px 20px;border-radius:999px;margin-top:14px">Pedir orçamento</a>
+  </div>
+</header>
+
+<section id="top" style="position:relative;background:linear-gradient(160deg,#0a1526 0%,#0f2147 55%,#16336b 100%);color:#fff;padding:150px 0 110px;overflow:hidden">
+  <div style="position:absolute;top:-120px;right:-80px;width:520px;height:520px;background:radial-gradient(circle,#2f6bff,transparent 68%);filter:blur(30px);animation:glow 9s ease-in-out infinite;pointer-events:none"></div>
+  <div style="position:absolute;bottom:-160px;left:-100px;width:480px;height:480px;background:radial-gradient(circle,#38bdf8,transparent 68%);filter:blur(40px);animation:glow2 11s ease-in-out infinite;pointer-events:none"></div>
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:54px 54px;mask-image:radial-gradient(circle at 50% 40%,#000,transparent 78%);pointer-events:none"></div>
+  <div style="position:relative;max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center">
+    <div>
+      <div data-reveal style="display:inline-flex;align-items:center;gap:9px;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);color:#7dd3fc;font-weight:600;font-size:13px;letter-spacing:.4px;padding:8px 16px;border-radius:999px;margin-bottom:26px">
+        <span style="width:8px;height:8px;border-radius:50%;background:#38bdf8;box-shadow:0 0 12px #38bdf8"></span>
+        5 anos conectando negócios em Goiás e Brasília
+      </div>
+      <h1 data-reveal data-delay="80" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:56px;line-height:1.05;letter-spacing:-1.5px;margin:0 0 22px">
+        Conectamos, protegemos e <span style="background:linear-gradient(120deg,#38bdf8,#2f6bff);-webkit-background-clip:text;background-clip:text;color:transparent">automatizamos</span> o seu espaço.
+      </h1>
+      <p data-reveal data-delay="160" style="font-size:19px;line-height:1.6;color:#b8c6de;max-width:540px;margin:0 0 36px">
+        Cabeamento estruturado, CFTV, automação, controle de acesso, interfonia e certificação de rede. Infraestrutura tecnológica sob medida — com garantia de qualidade.
+      </p>
+      <div data-reveal data-delay="240" style="display:flex;flex-wrap:wrap;gap:16px">
+        <a href="https://wa.me/5562992062304?text=Ol%C3%A1!%20Gostaria%20de%20um%20or%C3%A7amento%20com%20a%20Vitaliti." target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;font-weight:700;font-size:16px;padding:16px 30px;border-radius:999px;box-shadow:0 16px 40px -12px rgba(47,107,255,.8)">
+          <span style="width:19px;height:19px;display:block"><svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><path d="M12 2a10 10 0 0 0-8.6 15.06L2 22l5.06-1.33A10 10 0 1 0 12 2zm0 18.2c-1.5 0-2.97-.4-4.25-1.16l-.3-.18-3 .79.8-2.92-.2-.31A8.2 8.2 0 1 1 20.2 12 8.2 8.2 0 0 1 12 20.2zm4.5-5.8c-.25-.13-1.47-.72-1.7-.8-.23-.09-.4-.13-.56.12-.17.25-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.16.04-.31-.02-.43-.06-.13-.56-1.35-.77-1.85-.2-.48-.4-.42-.56-.42h-.48c-.16 0-.42.06-.64.31-.22.25-.85.83-.85 2.02 0 1.19.87 2.34.99 2.5.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg></span>Pedir orçamento
+        </a>
+        <a href="#servicos" style="display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;font-weight:600;font-size:16px;padding:16px 28px;border-radius:999px">
+          Ver serviços <span style="width:17px;height:17px;display:block"><i data-lucide="arrow-down"></i></span>
+        </a>
+      </div>
+    </div>
+    <div data-reveal data-delay="200" style="position:relative">
+      <div style="position:relative;border-radius:26px;padding:6px;background:linear-gradient(135deg,rgba(56,189,248,.6),rgba(47,107,255,.15),transparent);box-shadow:0 40px 80px -30px rgba(0,0,0,.6)">
+        <img src="assets/cftv-intelbras.jpg" alt="Câmera de segurança CFTV instalada pela Vitaliti" style="width:100%;height:440px;object-fit:cover;border-radius:22px;display:block">
+      </div>
+      <div style="position:absolute;top:26px;left:-26px;background:rgba(255,255,255,.95);color:#0f2147;border-radius:16px;padding:16px 20px;box-shadow:0 20px 40px -16px rgba(0,0,0,.4);animation:floatY 6s ease-in-out infinite">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;display:block"><i data-lucide="cctv"></i></span></span>
+          <div><div style="font-weight:800;font-size:15px">Monitoramento 24h</div><div style="font-size:12px;color:#64748b">CFTV em alta definição</div></div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:22px;right:-22px;background:rgba(255,255,255,.95);color:#0f2147;border-radius:16px;padding:16px 20px;box-shadow:0 20px 40px -16px rgba(0,0,0,.4);animation:floatY2 7s ease-in-out infinite">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;display:block"><i data-lucide="shield-check"></i></span></span>
+          <div><div style="font-weight:800;font-size:15px">Garantia de qualidade</div><div style="font-size:12px;color:#64748b">Instalação certificada</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:#0a1526;color:#fff;border-top:1px solid rgba(255,255,255,.06)">
+  <div style="max-width:1200px;margin:0 auto;padding:44px 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px">
+    <div data-reveal style="text-align:center">
+      <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:46px;background:linear-gradient(120deg,#38bdf8,#2f6bff);-webkit-background-clip:text;background-clip:text;color:transparent"><span data-count="5">0</span></div>
+      <div style="color:#8fa2c0;font-weight:600;font-size:14px;margin-top:4px">Anos de mercado</div>
+    </div>
+    <div data-reveal data-delay="80" style="text-align:center">
+      <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:46px;background:linear-gradient(120deg,#38bdf8,#2f6bff);-webkit-background-clip:text;background-clip:text;color:transparent"><span data-count="2">0</span></div>
+      <div style="color:#8fa2c0;font-weight:600;font-size:14px;margin-top:4px">Estados atendidos · GO e DF</div>
+    </div>
+    <div data-reveal data-delay="160" style="text-align:center">
+      <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:46px;background:linear-gradient(120deg,#38bdf8,#2f6bff);-webkit-background-clip:text;background-clip:text;color:transparent"><span data-count="6">0</span></div>
+      <div style="color:#8fa2c0;font-weight:600;font-size:14px;margin-top:4px">Áreas de atuação</div>
+    </div>
+    <div data-reveal data-delay="240" style="text-align:center">
+      <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:46px;background:linear-gradient(120deg,#38bdf8,#2f6bff);-webkit-background-clip:text;background-clip:text;color:transparent"><span data-count="100">0</span><span style="font-size:30px">%</span></div>
+      <div style="color:#8fa2c0;font-weight:600;font-size:14px;margin-top:4px">Garantia de qualidade</div>
+    </div>
+  </div>
+</section>
+
+<section id="servicos" style="background:#f5f7fa;padding:100px 0">
+  <div style="max-width:1200px;margin:0 auto;padding:0 28px">
+    <div data-reveal style="text-align:center;max-width:640px;margin:0 auto 56px">
+      <span style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;letter-spacing:2px;color:#1d4ed8;text-transform:uppercase">O que fazemos</span>
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:42px;letter-spacing:-1px;margin:14px 0 16px">Soluções tecnológicas completas</h2>
+      <p style="font-size:17px;color:#64748b;line-height:1.6;margin:0">Da infraestrutura de rede à automação e segurança eletrônica, entregamos soluções completas com os melhores fabricantes do mercado — para ambientes empresariais, condominiais e residenciais.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div data-reveal class="svc" style="background:#fff;border:1px solid #eaeef4;border-radius:20px;padding:34px;transition:transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s,border-color .4s" style-hover="transform:translateY(-8px);box-shadow:0 26px 50px -24px rgba(15,33,71,.35);border-color:#c9d6f0">
+        <span style="width:56px;height:56px;border-radius:15px;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:22px"><span style="width:28px;height:28px;display:block"><i data-lucide="network"></i></span></span>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;margin:0 0 10px">Cabeamento estruturado</h3>
+        <p style="color:#64748b;font-size:15px;line-height:1.6;margin:0">Projeto e instalação de redes organizadas e escaláveis, com fechamento de rack e certificação de rede conforme normas técnicas.</p>
+      </div>
+      <div data-reveal data-delay="80" style="background:#fff;border:1px solid #eaeef4;border-radius:20px;padding:34px;transition:transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s,border-color .4s" style-hover="transform:translateY(-8px);box-shadow:0 26px 50px -24px rgba(15,33,71,.35);border-color:#c9d6f0">
+        <span style="width:56px;height:56px;border-radius:15px;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:22px"><span style="width:28px;height:28px;display:block"><i data-lucide="cpu"></i></span></span>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;margin:0 0 10px">Automação Wi-Fi & Alexa</h3>
+        <p style="color:#64748b;font-size:15px;line-height:1.6;margin:0">Controle inteligente de TVs, luzes, ar-condicionado, cortinas e persianas — integrados por Wi-Fi e assistentes de voz.</p>
+      </div>
+      <div data-reveal data-delay="160" style="background:#fff;border:1px solid #eaeef4;border-radius:20px;padding:34px;transition:transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s,border-color .4s" style-hover="transform:translateY(-8px);box-shadow:0 26px 50px -24px rgba(15,33,71,.35);border-color:#c9d6f0">
+        <span style="width:56px;height:56px;border-radius:15px;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:22px"><span style="width:28px;height:28px;display:block"><i data-lucide="headset"></i></span></span>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;margin:0 0 10px">Outsourcing de TI</h3>
+        <p style="color:#64748b;font-size:15px;line-height:1.6;margin:0">Help Desk, telefonia IP e videoconferência: sua operação de tecnologia terceirizada, com suporte contínuo e especializado.</p>
+      </div>
+      <div data-reveal style="background:#fff;border:1px solid #eaeef4;border-radius:20px;padding:34px;transition:transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s,border-color .4s" style-hover="transform:translateY(-8px);box-shadow:0 26px 50px -24px rgba(15,33,71,.35);border-color:#c9d6f0">
+        <span style="width:56px;height:56px;border-radius:15px;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:22px"><span style="width:28px;height:28px;display:block"><i data-lucide="shield-check"></i></span></span>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;margin:0 0 10px">Segurança eletrônica</h3>
+        <p style="color:#64748b;font-size:15px;line-height:1.6;margin:0">CFTV em alta definição, alarmes e controle de acesso por biometria, tags e reconhecimento facial — monitoramento 24 h.</p>
+      </div>
+      <div data-reveal data-delay="80" style="background:#fff;border:1px solid #eaeef4;border-radius:20px;padding:34px;transition:transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s,border-color .4s" style-hover="transform:translateY(-8px);box-shadow:0 26px 50px -24px rgba(15,33,71,.35);border-color:#c9d6f0">
+        <span style="width:56px;height:56px;border-radius:15px;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:22px"><span style="width:28px;height:28px;display:block"><i data-lucide="phone-call"></i></span></span>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;margin:0 0 10px">Interfonia</h3>
+        <p style="color:#64748b;font-size:15px;line-height:1.6;margin:0">Interfones com vídeo para condomínios, empresas e residências, integrando portaria, unidades e áreas comuns.</p>
+      </div>
+      <div data-reveal data-delay="160" style="background:#fff;border:1px solid #eaeef4;border-radius:20px;padding:34px;transition:transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s,border-color .4s" style-hover="transform:translateY(-8px);box-shadow:0 26px 50px -24px rgba(15,33,71,.35);border-color:#c9d6f0">
+        <span style="width:56px;height:56px;border-radius:15px;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:22px"><span style="width:28px;height:28px;display:block"><i data-lucide="cable"></i></span></span>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;margin:0 0 10px">Rede óptica</h3>
+        <p style="color:#64748b;font-size:15px;line-height:1.6;margin:0">Implementação e manutenção de redes de fibra óptica, garantindo alta velocidade e estabilidade na sua conexão.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sobre" style="background:#fff;padding:100px 0">
+  <div style="max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:.95fr 1.05fr;gap:64px;align-items:center">
+    <div data-reveal style="position:relative">
+      <div style="border-radius:24px;overflow:hidden;box-shadow:0 40px 70px -34px rgba(15,33,71,.5)">
+        <img src="assets/sobre-tecnico.jpg" alt="Técnico da Vitaliti instalando câmera de CFTV" style="width:100%;height:460px;object-fit:cover;object-position:center 30%;display:block">
+      </div>
+      <div style="position:absolute;-webkit-backdrop-filter:blur(6px);bottom:-24px;right:-24px;background:linear-gradient(135deg,#0f2147,#16336b);color:#fff;padding:26px 30px;border-radius:20px;box-shadow:0 24px 50px -20px rgba(15,33,71,.6);max-width:230px">
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:34px;line-height:1">GO<span style="color:#38bdf8">+</span>DF</div>
+        <div style="color:#b8c6de;font-size:14px;margin-top:6px">Atuação em Goiás e no Distrito Federal</div>
+      </div>
+    </div>
+    <div>
+      <span data-reveal style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;letter-spacing:2px;color:#1d4ed8;text-transform:uppercase">Sobre a Vitaliti</span>
+      <h2 data-reveal data-delay="60" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:40px;letter-spacing:-1px;margin:14px 0 20px;line-height:1.1">Tecnologia com engenharia por trás de cada instalação</h2>
+      <p data-reveal data-delay="120" style="font-size:17px;color:#64748b;line-height:1.7;margin:0 0 32px">A Vitaliti — Engenharia e Soluções Tecnológicas realiza instalação, implantação e manutenção de sistemas, sempre analisando as aplicações, equipamentos e protocolos de cada cliente para garantir a resiliência da rede. Entregamos infraestrutura eficiente, com redução de custos e foco em resultados — e todo o suporte necessário para uma parceria sólida e duradoura.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div data-reveal data-delay="160" style="display:flex;gap:14px;align-items:flex-start">
+          <span style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#eef3ff;color:#1d4ed8;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;display:block"><i data-lucide="calendar-clock"></i></span></span>
+          <div><div style="font-weight:800;font-size:16px">5 anos de experiência</div><div style="color:#64748b;font-size:14px;line-height:1.5;margin-top:2px">Projetos entregues com consistência.</div></div>
+        </div>
+        <div data-reveal data-delay="220" style="display:flex;gap:14px;align-items:flex-start">
+          <span style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#eef3ff;color:#1d4ed8;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;display:block"><i data-lucide="map-pin"></i></span></span>
+          <div><div style="font-weight:800;font-size:16px">Goiás e Brasília</div><div style="color:#64748b;font-size:14px;line-height:1.5;margin-top:2px">Cobertura em dois estados.</div></div>
+        </div>
+        <div data-reveal data-delay="280" style="display:flex;gap:14px;align-items:flex-start">
+          <span style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#eef3ff;color:#1d4ed8;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;display:block"><i data-lucide="shield-check"></i></span></span>
+          <div><div style="font-weight:800;font-size:16px">Garantia de qualidade</div><div style="color:#64748b;font-size:14px;line-height:1.5;margin-top:2px">Instalações com padrão técnico.</div></div>
+        </div>
+        <div data-reveal data-delay="340" style="display:flex;gap:14px;align-items:flex-start">
+          <span style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#eef3ff;color:#1d4ed8;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;display:block"><i data-lucide="users"></i></span></span>
+          <div><div style="font-weight:800;font-size:16px">Empresas e residências</div><div style="color:#64748b;font-size:14px;line-height:1.5;margin-top:2px">Soluções para cada perfil.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="clientes" style="background:#0a1526;color:#fff;padding:100px 0 80px;overflow:hidden">
+  <div style="max-width:1200px;margin:0 auto;padding:0 28px">
+    <div data-reveal style="text-align:center;max-width:640px;margin:0 auto 56px">
+      <span style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;letter-spacing:2px;color:#38bdf8;text-transform:uppercase">Quem confia na Vitaliti</span>
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:42px;letter-spacing:-1px;margin:14px 0 16px">Clientes que já são referência</h2>
+      <p style="font-size:17px;color:#b8c6de;line-height:1.6;margin:0">Estabelecimentos e marcas que escolheram a nossa tecnologia para operar com segurança e eficiência.</p>
+    </div>
+  </div>
+  <div class="cli-feed" style="position:relative;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)">
+      <div class="cli-track" style="display:flex;gap:20px;width:max-content;animation:marquee 90s linear infinite">
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-cea.jpg" alt="C&amp;A" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">C&amp;A</div><div style="color:#9fb2cf;font-size:12.5px">Moda · Varejo</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-bluefit.jpg" alt="Bluefit" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Bluefit</div><div style="color:#9fb2cf;font-size:12.5px">Academia</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-passeio-aguas.jpg" alt="Passeio das Águas" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Passeio das Águas</div><div style="color:#9fb2cf;font-size:12.5px">Shopping</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-new-york-square.jpg" alt="New York Square" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">New York Square</div><div style="color:#9fb2cf;font-size:12.5px">Shopping</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-crcgo.jpg" alt="CRCGO" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">CRCGO</div><div style="color:#9fb2cf;font-size:12.5px">Conselho de Contabilidade</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-stockcar.jpg" alt="StockCar" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">StockCar</div><div style="color:#9fb2cf;font-size:12.5px">Autódromo de Goiânia</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-clube-prive.jpg" alt="Clube Privé" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Clube Privé</div><div style="color:#9fb2cf;font-size:12.5px">Resort · Caldas Novas</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-virta.jpg" alt="Virta Engenharia" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Virta Engenharia</div><div style="color:#9fb2cf;font-size:12.5px">Engenharia</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-reserva35.jpg" alt="Reserva 35" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Reserva 35</div><div style="color:#9fb2cf;font-size:12.5px">Adega & Eventos</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-zetta.jpg" alt="Zetta Áudio" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Zetta Áudio</div><div style="color:#9fb2cf;font-size:12.5px">Áudio & Automação</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-organiq.jpg" alt="Organiq Beauté" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Organiq Beauté</div><div style="color:#9fb2cf;font-size:12.5px">Beleza & Estética</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-clinica-morada.jpg" alt="Clínica Morada" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Clínica Morada</div><div style="color:#9fb2cf;font-size:12.5px">Saúde & Bem-estar</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-solidy.jpg" alt="Solidy Benefícios" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Solidy Benefícios</div><div style="color:#9fb2cf;font-size:12.5px">Benefícios</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-metrobus.jpg" alt="Metrobus" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Metrobus</div><div style="color:#9fb2cf;font-size:12.5px">Sede Administrativa</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-carne-de-sol.jpg" alt="Carne de Sol" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Carne de Sol</div><div style="color:#9fb2cf;font-size:12.5px">Gastrobar · Marista</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-riquinho-store.jpg" alt="Riquinho Store" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Riquinho Store</div><div style="color:#9fb2cf;font-size:12.5px">Moda · Varejo</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-fish-sushi.jpg" alt="Fish Sushi" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Fish Sushi</div><div style="color:#9fb2cf;font-size:12.5px">Restaurante</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-emerald-boutique.jpg" alt="Emerald Boutique" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Emerald Boutique</div><div style="color:#9fb2cf;font-size:12.5px">Moda · Shopping</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-escola-criativa.jpg" alt="Escola Criativa" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Escola Criativa</div><div style="color:#9fb2cf;font-size:12.5px">Educação</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3">
+          <img src="assets/cliente-virginia-arruda.jpg" alt="Virgínia Arruda" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Virgínia Arruda</div><div style="color:#9fb2cf;font-size:12.5px">Concept Store</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-cea.jpg" alt="C&amp;A" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">C&amp;A</div><div style="color:#9fb2cf;font-size:12.5px">Moda · Varejo</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-bluefit.jpg" alt="Bluefit" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Bluefit</div><div style="color:#9fb2cf;font-size:12.5px">Academia</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-passeio-aguas.jpg" alt="Passeio das Águas" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Passeio das Águas</div><div style="color:#9fb2cf;font-size:12.5px">Shopping</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-new-york-square.jpg" alt="New York Square" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">New York Square</div><div style="color:#9fb2cf;font-size:12.5px">Shopping</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-crcgo.jpg" alt="CRCGO" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">CRCGO</div><div style="color:#9fb2cf;font-size:12.5px">Conselho de Contabilidade</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-stockcar.jpg" alt="StockCar" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">StockCar</div><div style="color:#9fb2cf;font-size:12.5px">Autódromo de Goiânia</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-clube-prive.jpg" alt="Clube Privé" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Clube Privé</div><div style="color:#9fb2cf;font-size:12.5px">Resort · Caldas Novas</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-virta.jpg" alt="Virta Engenharia" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Virta Engenharia</div><div style="color:#9fb2cf;font-size:12.5px">Engenharia</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-reserva35.jpg" alt="Reserva 35" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Reserva 35</div><div style="color:#9fb2cf;font-size:12.5px">Adega & Eventos</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-zetta.jpg" alt="Zetta Áudio" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Zetta Áudio</div><div style="color:#9fb2cf;font-size:12.5px">Áudio & Automação</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-organiq.jpg" alt="Organiq Beauté" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Organiq Beauté</div><div style="color:#9fb2cf;font-size:12.5px">Beleza & Estética</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-clinica-morada.jpg" alt="Clínica Morada" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Clínica Morada</div><div style="color:#9fb2cf;font-size:12.5px">Saúde & Bem-estar</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-solidy.jpg" alt="Solidy Benefícios" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Solidy Benefícios</div><div style="color:#9fb2cf;font-size:12.5px">Benefícios</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-metrobus.jpg" alt="Metrobus" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Metrobus</div><div style="color:#9fb2cf;font-size:12.5px">Sede Administrativa</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-carne-de-sol.jpg" alt="Carne de Sol" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Carne de Sol</div><div style="color:#9fb2cf;font-size:12.5px">Gastrobar · Marista</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-riquinho-store.jpg" alt="Riquinho Store" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Riquinho Store</div><div style="color:#9fb2cf;font-size:12.5px">Moda · Varejo</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-fish-sushi.jpg" alt="Fish Sushi" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Fish Sushi</div><div style="color:#9fb2cf;font-size:12.5px">Restaurante</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-emerald-boutique.jpg" alt="Emerald Boutique" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Emerald Boutique</div><div style="color:#9fb2cf;font-size:12.5px">Moda · Shopping</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-escola-criativa.jpg" alt="Escola Criativa" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Escola Criativa</div><div style="color:#9fb2cf;font-size:12.5px">Educação</div></div>
+        </div>
+        <div style="flex:0 0 340px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/3" aria-hidden="true">
+          <img src="assets/cliente-virginia-arruda.jpg" alt="Virgínia Arruda" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(4,10,22,.92))"></div>
+          <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Virgínia Arruda</div><div style="color:#9fb2cf;font-size:12.5px">Concept Store</div></div>
+        </div>
+      </div>
+    </div>
+</section>
+
+<section style="background:#f5f7fa;padding:100px 0">
+  <div style="max-width:1200px;margin:0 auto;padding:0 28px">
+    <div data-reveal style="text-align:center;max-width:640px;margin:0 auto 56px">
+      <span style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;letter-spacing:2px;color:#1d4ed8;text-transform:uppercase">Depoimentos</span>
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:42px;letter-spacing:-1px;margin:14px 0 16px">O que dizem os clientes</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div data-reveal style="background:#fff;border:1px solid #eaeef4;border-radius:20px;padding:32px">
+        <div style="color:#f59e0b;font-size:18px;letter-spacing:2px;margin-bottom:16px">★★★★★</div>
+        <p style="font-size:16px;line-height:1.7;color:#334155;margin:0 0 24px">"Instalação de CFTV e rede impecável na nossa loja. Equipe pontual, organizada e o resultado ficou muito acima do esperado."</p>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800">R</span>
+          <div><div style="font-weight:800;font-size:15px">Gerente de loja</div><div style="color:#64748b;font-size:13px">Varejo · Goiânia</div></div>
+        </div>
+      </div>
+      <div data-reveal data-delay="80" style="background:#fff;border:1px solid #eaeef4;border-radius:20px;padding:32px">
+        <div style="color:#f59e0b;font-size:18px;letter-spacing:2px;margin-bottom:16px">★★★★★</div>
+        <p style="font-size:16px;line-height:1.7;color:#334155;margin:0 0 24px">"Fizeram toda a automação e o controle de acesso do restaurante. Segurança e praticidade que a gente sente todos os dias."</p>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800">F</span>
+          <div><div style="font-weight:800;font-size:15px">Proprietário</div><div style="color:#64748b;font-size:13px">Gastronomia · Marista</div></div>
+        </div>
+      </div>
+      <div data-reveal data-delay="160" style="background:#fff;border:1px solid #eaeef4;border-radius:20px;padding:32px">
+        <div style="color:#f59e0b;font-size:18px;letter-spacing:2px;margin-bottom:16px">★★★★★</div>
+        <p style="font-size:16px;line-height:1.7;color:#334155;margin:0 0 24px">"Cabeamento estruturado e certificação de rede feitos com muito profissionalismo. Recomendo a Vitaliti sem pensar duas vezes."</p>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800">E</span>
+          <div><div style="font-weight:800;font-size:15px">Coordenação</div><div style="color:#64748b;font-size:13px">Educação · Goiânia</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" style="background:#fff;padding:100px 0">
+  <div style="max-width:840px;margin:0 auto;padding:0 28px">
+    <div data-reveal style="text-align:center;margin:0 auto 48px">
+      <span style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;letter-spacing:2px;color:#1d4ed8;text-transform:uppercase">Dúvidas frequentes</span>
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:42px;letter-spacing:-1px;margin:14px 0 0">Perguntas frequentes</h2>
+    </div>
+    <div data-reveal style="display:flex;flex-direction:column;gap:14px">
+      <details style="background:#f5f7fa;border:1px solid #eaeef4;border-radius:16px;padding:4px 24px">
+        <summary style="display:flex;justify-content:space-between;align-items:center;gap:16px;cursor:pointer;padding:20px 0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px">Quais regiões a Vitaliti atende?<span style="width:22px;height:22px;color:#1d4ed8;flex-shrink:0"><i data-lucide="plus"></i></span></summary>
+        <p style="margin:0 0 20px;color:#64748b;font-size:16px;line-height:1.7">Atendemos todo o estado de Goiás e também Brasília e região do Distrito Federal. Fale conosco para confirmar a disponibilidade no seu endereço.</p>
+      </details>
+      <details style="background:#f5f7fa;border:1px solid #eaeef4;border-radius:16px;padding:4px 24px">
+        <summary style="display:flex;justify-content:space-between;align-items:center;gap:16px;cursor:pointer;padding:20px 0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px">O orçamento é gratuito?<span style="width:22px;height:22px;color:#1d4ed8;flex-shrink:0"><i data-lucide="plus"></i></span></summary>
+        <p style="margin:0 0 20px;color:#64748b;font-size:16px;line-height:1.7">Sim. Fazemos a avaliação e o orçamento sem compromisso. Basta chamar no WhatsApp e nossa equipe retorna com uma proposta sob medida.</p>
+      </details>
+      <details style="background:#f5f7fa;border:1px solid #eaeef4;border-radius:16px;padding:4px 24px">
+        <summary style="display:flex;justify-content:space-between;align-items:center;gap:16px;cursor:pointer;padding:20px 0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px">Os serviços têm garantia?<span style="width:22px;height:22px;color:#1d4ed8;flex-shrink:0"><i data-lucide="plus"></i></span></summary>
+        <p style="margin:0 0 20px;color:#64748b;font-size:16px;line-height:1.7">Todas as instalações são executadas com padrão técnico e garantia de qualidade. Trabalhamos com equipamentos e materiais confiáveis.</p>
+      </details>
+      <details style="background:#f5f7fa;border:1px solid #eaeef4;border-radius:16px;padding:4px 24px">
+        <summary style="display:flex;justify-content:space-between;align-items:center;gap:16px;cursor:pointer;padding:20px 0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px">Vocês atendem residências e empresas?<span style="width:22px;height:22px;color:#1d4ed8;flex-shrink:0"><i data-lucide="plus"></i></span></summary>
+        <p style="margin:0 0 20px;color:#64748b;font-size:16px;line-height:1.7">Sim. Desenvolvemos projetos de automação, segurança e rede tanto para ambientes residenciais quanto para comércios e empresas de diferentes portes.</p>
+      </details>
+      <details style="background:#f5f7fa;border:1px solid #eaeef4;border-radius:16px;padding:4px 24px">
+        <summary style="display:flex;justify-content:space-between;align-items:center;gap:16px;cursor:pointer;padding:20px 0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px">Fazem manutenção depois da instalação?<span style="width:22px;height:22px;color:#1d4ed8;flex-shrink:0"><i data-lucide="plus"></i></span></summary>
+        <p style="margin:0 0 20px;color:#64748b;font-size:16px;line-height:1.7">Sim. Oferecemos suporte e manutenção para os sistemas que instalamos, garantindo o funcionamento contínuo da sua infraestrutura.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="contato" style="position:relative;background:linear-gradient(160deg,#0f2147,#16336b);color:#fff;padding:96px 0;overflow:hidden">
+  <div style="position:absolute;top:-100px;left:-60px;width:420px;height:420px;background:radial-gradient(circle,#2f6bff,transparent 68%);filter:blur(40px);animation:glow 10s ease-in-out infinite;pointer-events:none"></div>
+  <div style="position:relative;max-width:900px;margin:0 auto;padding:0 28px;text-align:center">
+    <h2 data-reveal style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:46px;letter-spacing:-1.2px;margin:0 0 18px;line-height:1.08">Pronto para modernizar o seu espaço?</h2>
+    <p data-reveal data-delay="80" style="font-size:19px;color:#b8c6de;line-height:1.6;margin:0 auto 36px;max-width:560px">Peça seu orçamento gratuito pelo WhatsApp ou e-mail. Nossa equipe responde rápido e monta a solução ideal para você.</p>
+    <div data-reveal data-delay="160" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center">
+      <a href="https://wa.me/5562992062304?text=Ol%C3%A1!%20Gostaria%20de%20um%20or%C3%A7amento%20com%20a%20Vitaliti." target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;font-size:17px;padding:17px 34px;border-radius:999px;box-shadow:0 18px 44px -14px rgba(34,197,94,.7)">
+        <span style="width:20px;height:20px;display:block"><svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><path d="M12 2a10 10 0 0 0-8.6 15.06L2 22l5.06-1.33A10 10 0 1 0 12 2zm0 18.2c-1.5 0-2.97-.4-4.25-1.16l-.3-.18-3 .79.8-2.92-.2-.31A8.2 8.2 0 1 1 20.2 12 8.2 8.2 0 0 1 12 20.2zm4.5-5.8c-.25-.13-1.47-.72-1.7-.8-.23-.09-.4-.13-.56.12-.17.25-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.16.04-.31-.02-.43-.06-.13-.56-1.35-.77-1.85-.2-.48-.4-.42-.56-.42h-.48c-.16 0-.42.06-.64.31-.22.25-.85.83-.85 2.02 0 1.19.87 2.34.99 2.5.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg></span>(62) 99206-2304
+      </a>
+      <a href="https://instagram.com/vitalitisolucoes" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#fff;font-weight:600;font-size:17px;padding:17px 30px;border-radius:999px">
+        <span style="width:20px;height:20px;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg></span>@vitalitisolucoes
+      </a>
+      <a href="mailto:Vitalitiengenharia@gmail.com" style="display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#fff;font-weight:600;font-size:17px;padding:17px 30px;border-radius:999px">
+        <span style="width:20px;height:20px;display:block"><i data-lucide="mail"></i></span>Vitalitiengenharia@gmail.com
+      </a>
+  </div>
+</section>
+
+<footer style="background:#0a1526;color:#8fa2c0;padding:56px 0 32px">
+  <div style="max-width:1200px;margin:0 auto;padding:0 28px">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:40px;padding-bottom:36px;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div style="max-width:340px">
+        <div style="margin-bottom:16px">
+          <img src="assets/logo-vitaliti-white-clean.png" alt="Vitaliti Soluções Tecnológicas" style="height:44px;width:auto;display:block">
+        </div>
+        <p style="font-size:14px;line-height:1.6;margin:0">Engenharia e soluções tecnológicas em cabeamento, automação, segurança eletrônica, interfonia e rede óptica. Goiânia · Goiás.</p>
+      </div>
+      <div>
+        <div style="color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px">Serviços</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:14px">
+          <a href="#servicos" style="color:#8fa2c0">Cabeamento estruturado</a>
+          <a href="#servicos" style="color:#8fa2c0">Automação Wi-Fi & Alexa</a>
+          <a href="#servicos" style="color:#8fa2c0">Outsourcing de TI</a>
+          <a href="#servicos" style="color:#8fa2c0">Segurança eletrônica · Rede óptica</a>
+        </div>
+      </div>
+      <div>
+        <div style="color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px">Contato</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:14px">
+          <a href="https://wa.me/5562992062304" target="_blank" rel="noopener" style="color:#8fa2c0;display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;display:block"><svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><path d="M12 2a10 10 0 0 0-8.6 15.06L2 22l5.06-1.33A10 10 0 1 0 12 2zm0 18.2c-1.5 0-2.97-.4-4.25-1.16l-.3-.18-3 .79.8-2.92-.2-.31A8.2 8.2 0 1 1 20.2 12 8.2 8.2 0 0 1 12 20.2zm4.5-5.8c-.25-.13-1.47-.72-1.7-.8-.23-.09-.4-.13-.56.12-.17.25-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.16.04-.31-.02-.43-.06-.13-.56-1.35-.77-1.85-.2-.48-.4-.42-.56-.42h-.48c-.16 0-.42.06-.64.31-.22.25-.85.83-.85 2.02 0 1.19.87 2.34.99 2.5.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg></span>(62) 99206-2304</a>
+          <a href="https://instagram.com/vitalitisolucoes" target="_blank" rel="noopener" style="color:#8fa2c0;display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg></span>@vitalitisolucoes</a>
+          <a href="mailto:Vitalitiengenharia@gmail.com" style="color:#8fa2c0;display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;display:block"><i data-lucide="mail"></i></span>Vitalitiengenharia@gmail.com</a>
+          <span style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;display:block"><i data-lucide="map-pin"></i></span>Goiânia · Goiás</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding-top:24px;font-size:13px;color:#64748b;text-align:center">
+      © 2026 Vitaliti Soluções Tecnológicas. Todos os direitos reservados.
+    </div>
+  </div>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  componentDidMount() {
+    const run = () => {
+      if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+    };
+    run();
+    setTimeout(run, 400);
+    setTimeout(run, 1200);
+
+    // Keep Lucide icons alive across re-renders
+    const root = document.getElementById('dc-root') || document.body;
+    let raf = null;
+    this._mo = new MutationObserver(() => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = null; run(); });
+    });
+    this._mo.observe(root, { childList: true, subtree: true });
+
+    // Scroll-reveal
+    const revealEls = document.querySelectorAll('[data-reveal]');
+    revealEls.forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(26px)';
+      el.style.transition = 'opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1)';
+      const d = el.getAttribute('data-delay');
+      if (d) el.style.transitionDelay = d + 'ms';
+    });
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    revealEls.forEach(el => io.observe(el));
+
+    // Count-up
+    const counters = document.querySelectorAll('[data-count]');
+    const cio = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const target = parseInt(el.getAttribute('data-count'), 10);
+        const dur = 1400;
+        const start = performance.now();
+        const tick = (now) => {
+          const p = Math.min((now - start) / dur, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(target * eased);
+          if (p < 1) requestAnimationFrame(tick);
+          else el.textContent = target;
+        };
+        requestAnimationFrame(tick);
+        cio.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(el => cio.observe(el));
+
+    // Header shadow on scroll
+    const header = document.getElementById('site-header');
+    const onScroll = () => {
+      if (!header) return;
+      if (window.scrollY > 30) {
+        header.style.boxShadow = '0 10px 30px -18px rgba(15,33,71,.5)';
+        header.style.padding = '10px 0';
+      } else {
+        header.style.boxShadow = 'none';
+        header.style.padding = '16px 0';
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    this._onScroll = onScroll;
+  }
+  componentDidUpdate() {
+    if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+  }
+  componentWillUnmount() {
+    if (this._onScroll) window.removeEventListener('scroll', this._onScroll);
+    if (this._mo) this._mo.disconnect();
+  }
+  renderVals() {
+    return {
+      toggleMenu: () => {
+        const m = document.getElementById('mobile-menu');
+        if (m) m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+      },
+      closeMenu: () => {
+        const m = document.getElementById('mobile-menu');
+        if (m) m.style.display = 'none';
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
