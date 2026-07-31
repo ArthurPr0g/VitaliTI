@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vitaliti-site",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "--cors", "-p", "4321", "."],
+      "port": 4321
+    }
+  ]
+}

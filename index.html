@@ -30,6 +30,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="./vitaliti-config.js"></script>
+<script src="./vendor/supabase-js.min.js"></script>
 <script src="./vitaliti-store.js"></script>
 <style>
   * { box-sizing: border-box; }
@@ -605,6 +607,12 @@
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   componentDidMount() {
+    // A nav mostra "Entrar" ou o atalho do painel conforme a sessão. VS.session()
+    // é síncrono e lê um espelho local, que pode estar velho (token expirado,
+    // logout em outra aba). Quando o store confere com o servidor e corrige,
+    // reconstruímos a nav.
+    if (window.VS && VS.onSession) VS.onSession(() => this.setState({ sessionTick: Date.now() }));
+
     const run = () => {
       if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
     };

@@ -11,6 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="./vitaliti-config.js"></script>
+<script src="./vendor/supabase-js.min.js"></script>
 <script src="./vitaliti-store.js"></script>
 <style>
   *{ box-sizing:border-box; }
@@ -605,7 +607,7 @@
           </label>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             <button type="button" onClick="{{ saveCfg }}" disabled="{{ busyCfg }}" style="background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;border:0;border-radius:12px;padding:13px 24px;font-size:14.5px;font-weight:700;cursor:pointer">{{ saveCfgLabel }}</button>
-            <button type="button" onClick="{{ resetDb }}" style="border:1px solid var(--line);background:var(--soft);color:var(--muted);border-radius:12px;padding:13px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:color .2s" style-hover="color:#dc2626">Restaurar dados de demonstração</button>
+            <button type="button" onClick="{{ resetDb }}" style="border:1px solid var(--line);background:var(--soft);color:var(--muted);border-radius:12px;padding:13px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:color .2s" style-hover="color:#1d4ed8">Recarregar do servidor</button>
           </div>
         </div>
       </div>
@@ -802,13 +804,23 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
-    this.db = VS.load();
     const t = localStorage.getItem('vitaliti.theme');
-    const params = new URLSearchParams(location.search);
-    const wantsPanel = params.get('view') === 'app';
-    this.setState({ theme: t === 'dark' ? 'dark' : 'light', cfg: Object.assign({}, this.db.settings) });
-    setTimeout(() => this.setState({ loading: false }), 650);
-    if (this.state.session && wantsPanel) this.splash('Preparando o gerenciamento…', () => { });
+    this.setState({ theme: t === 'dark' ? 'dark' : 'light' });
+
+    // Falha de gravação no banco não pode passar em silêncio: a UI já
+    // mostrou "salvo" quando persist() foi chamado.
+    VS.onError((msg) => this.toast('Erro ao gravar: ' + msg, 'erro'));
+
+    // O db agora vem do Postgres. Nada renderiza antes da hidratação.
+    VS.init().then(({ session }) => {
+      if (!session) { this.setState({ session: null, view: 'login', loading: false }); return; }
+      this.db = VS.load();
+      const wantsPanel = new URLSearchParams(location.search).get('view') === 'app';
+      this.setState({ session, view: 'dash', cfg: Object.assign({}, this.db.settings), loading: false });
+      if (wantsPanel) this.splash('Preparando o gerenciamento…', () => { });
+    }).catch(() => {
+      this.setState({ session: null, view: 'login', loading: false, loginErro: 'Não foi possível conectar ao servidor. Verifique sua internet e recarregue a página.' });
+    });
   }
 
   /* ---------- infra ---------- */
@@ -839,24 +851,38 @@ class Component extends DCLogic {
   /* ---------- auth ---------- */
   doLogin = () => {
     if (this.state.busyKey) return;
-    this.setState({ busyKey: 'login' });
-    setTimeout(() => this.setState({ busyKey: null }), 900);
-    const r = VS.login(this.state.loginEmail, this.state.loginSenha);
-    if (!r.ok) { this.setState({ loginErro: r.erro }); return; }
-    this.setState({ loginErro: '', session: r.session });
-    this.splash('Autenticando…', () => { this.setState({ view: 'dash' }); this.toast('Bem-vindo, ' + r.session.nome.split(' ')[0] + '!'); });
+    this.setState({ busyKey: 'login', loginErro: '' });
+    // O botão só destrava quando o servidor responde — antes era um
+    // setTimeout fixo, que agora mentiria sobre o estado da requisição.
+    VS.login(this.state.loginEmail, this.state.loginSenha).then((r) => {
+      this.setState({ busyKey: null });
+      if (!r.ok) { this.setState({ loginErro: r.erro }); return; }
+      this.db = VS.load();
+      this.setState({ loginErro: '', session: r.session, cfg: Object.assign({}, this.db.settings) });
+      this.splash('Autenticando…', () => { this.setState({ view: 'dash' }); this.toast('Bem-vindo, ' + r.session.nome.split(' ')[0] + '!'); });
+    });
   };
   doGoogle = () => {
     if (this.state.busyKey) return;
-    this.setState({ busyKey: 'google' });
-    setTimeout(() => this.setState({ busyKey: null }), 900);
-    const r = VS.loginGoogle();
-    this.setState({ session: r.session, loginErro: '' });
-    this.splash('Conectando com o Google…', () => { this.setState({ view: 'dash' }); this.toast('Sessão iniciada com Google'); });
+    this.setState({ busyKey: 'google', loginErro: '' });
+    // Sai da página: o Google devolve para cá e o componentDidMount assume.
+    VS.loginGoogle().then((r) => {
+      if (!r.ok) this.setState({ busyKey: null, loginErro: r.erro });
+    });
   };
   doLogout = () => {
     VS.logout();
+    this.db = null;
     this.setState({ session: null, view: 'login', loginSenha: '', loginEmail: '' });
+  };
+  doRecover = () => {
+    const email = this.state.loginEmail;
+    if (!email || email.indexOf('@') < 0) { this.setState({ loginErro: 'Informe seu e-mail para receber o link.' }); return; }
+    this.setState({ busyKey: 'recover' });
+    VS.recoverPassword(email).then((r) => {
+      this.setState({ busyKey: null, loginErro: r.ok ? '' : r.erro, recover: !r.ok });
+      if (r.ok) this.toast('Link de redefinição enviado para ' + email, 'info');
+    });
   };
 
   /* ---------- clientes ---------- */
@@ -994,7 +1020,9 @@ class Component extends DCLogic {
 
   renderVals() {
     const s = this.state;
-    const db = this.db || (window.VS ? VS.load() : { clients: [], services: [], quotes: [], log: [], settings: {} });
+    // Na tela de login ainda não há db: a hidratação só acontece depois de
+    // autenticar. Este vazio mantém o render funcionando até lá.
+    const db = this.db || { clients: [], services: [], quotes: [], log: [], settings: {} };
     this.db = db;
     const sess = s.session;
     const v = s.view;
@@ -1211,7 +1239,7 @@ class Component extends DCLogic {
       onLembrar: (e) => this.setState({ lembrar: e.target.checked }),
       openRecover: () => this.setState({ recover: true }),
       closeRecover: () => this.setState({ recover: false }),
-      sendRecover: () => { this.setState({ recover: false }); this.toast('Link de recuperação enviado para ' + (s.loginEmail || 'seu e-mail'), 'info'); },
+      sendRecover: this.doRecover,
       doLogin: this.doLogin, doGoogle: this.doGoogle, doLogout: this.doLogout,
 
       goDash: () => this.go('dash'),
@@ -1267,7 +1295,13 @@ class Component extends DCLogic {
       cfg, cfgFields,
       setCfgCondicoes: setCfg('condicoes'), setCfgMensagem: setCfg('mensagem'), setCfgRodape: setCfg('rodape'),
       saveCfg: () => this.runBusy('cfg', () => { Object.assign(db.settings, this.state.cfg, { validadeDias: Number(this.state.cfg.validadeDias) || 15 }); this.save(); this.toast('Configurações salvas'); }),
-      resetDb: () => { this.db = VS.reset(); this.setState({ cfg: Object.assign({}, this.db.settings), tick: s.tick + 1 }); this.toast('Dados de demonstração restaurados', 'info'); },
+      resetDb: () => {
+        VS.reload().then((d) => {
+          this.db = d;
+          this.setState({ cfg: Object.assign({}, d.settings), tick: s.tick + 1 });
+          this.toast('Dados recarregados do servidor', 'info');
+        }).catch(() => { });
+      },
 
       toasts: s.toasts
     };
