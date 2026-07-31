@@ -30,6 +30,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="./vitaliti-store.js"></script>
 <style>
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -93,6 +94,20 @@
       <a href="https://wa.me/5562992062304?text=Ol%C3%A1!%20Gostaria%20de%20um%20or%C3%A7amento%20com%20a%20Vitaliti." target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;font-weight:700;font-size:14px;padding:11px 20px;border-radius:999px;box-shadow:0 8px 22px -8px rgba(29,78,216,.65)">
         <span style="width:17px;height:17px;display:block"><svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><path d="M12 2a10 10 0 0 0-8.6 15.06L2 22l5.06-1.33A10 10 0 1 0 12 2zm0 18.2c-1.5 0-2.97-.4-4.25-1.16l-.3-.18-3 .79.8-2.92-.2-.31A8.2 8.2 0 1 1 20.2 12 8.2 8.2 0 0 1 12 20.2zm4.5-5.8c-.25-.13-1.47-.72-1.7-.8-.23-.09-.4-.13-.56.12-.17.25-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.16.04-.31-.02-.43-.06-.13-.56-1.35-.77-1.85-.2-.48-.4-.42-.56-.42h-.48c-.16 0-.42.06-.64.31-.22.25-.85.83-.85 2.02 0 1.19.87 2.34.99 2.5.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg></span>Pedir orçamento
       </a>
+      <sc-if value="{{ deslogado }}" hint-placeholder-val="{{ true }}">
+        <a href="Gerenciamento.dc.html" style="display:inline-flex;align-items:center;gap:8px;border:1px solid #dbe3ef;color:#0f2147;font-weight:700;font-size:14px;padding:10px 18px;border-radius:999px;transition:border-color .25s,color .25s,transform .25s" style-hover="border-color:#2f6bff;color:#1d4ed8;transform:translateY(-1px)">
+          <span style="width:16px;height:16px;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></span>Entrar
+        </a>
+      </sc-if>
+      <sc-if value="{{ logado }}" hint-placeholder-val="{{ false }}">
+        <span style="display:inline-flex;align-items:center;gap:14px">
+          <span style="display:flex;align-items:center;gap:4px;background:#f2f5fa;border:1px solid #e6ecf5;border-radius:999px;padding:4px">
+            <span style="display:flex;align-items:center;padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#1d4ed8,#2f6bff);box-shadow:0 8px 18px -10px rgba(29,78,216,.9)">Loja</span>
+            <a href="Gerenciamento.dc.html?view=app" style="display:flex;align-items:center;padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:700;color:#64748b;transition:background .25s,color .25s" style-hover="color:#0f2147;background:#fff">Gerenciamento</a>
+          </span>
+          <span title="{{ userNome }}" style="width:38px;height:38px;border-radius:999px;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px">{{ userIniciais }}</span>
+        </span>
+      </sc-if>
     </nav>
     <button id="nav-toggle" aria-label="Abrir menu" onClick="{{ toggleMenu }}" style="display:none;background:none;border:0;padding:8px;cursor:pointer;color:#0f2147;width:44px;height:44px;align-items:center;justify-content:center">
       <span style="width:26px;height:26px;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span>
@@ -102,7 +117,8 @@
     <a href="#servicos" onClick="{{ closeMenu }}" style="color:#0f2147;font-weight:600;font-size:17px;padding:15px 4px;border-bottom:1px solid #f1f4f8">Serviços</a>
     <a href="#clientes" onClick="{{ closeMenu }}" style="color:#0f2147;font-weight:600;font-size:17px;padding:15px 4px;border-bottom:1px solid #f1f4f8">Clientes</a>
     <a href="#sobre" onClick="{{ closeMenu }}" style="color:#0f2147;font-weight:600;font-size:17px;padding:15px 4px;border-bottom:1px solid #f1f4f8">Sobre</a>
-    <a href="#faq" onClick="{{ closeMenu }}" style="color:#0f2147;font-weight:600;font-size:17px;padding:15px 4px">FAQ</a>
+    <a href="#faq" onClick="{{ closeMenu }}" style="color:#0f2147;font-weight:600;font-size:17px;padding:15px 4px;border-bottom:1px solid #f1f4f8">FAQ</a>
+    <a href="{{ painelHref }}" style="color:#1d4ed8;font-weight:700;font-size:17px;padding:15px 4px">{{ painelLabel }}</a>
     <a href="https://wa.me/5562992062304?text=Ol%C3%A1!%20Gostaria%20de%20um%20or%C3%A7amento%20com%20a%20Vitaliti." target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;font-weight:700;font-size:16px;padding:15px 20px;border-radius:999px;margin-top:14px">Pedir orçamento</a>
   </div>
 </header>
@@ -671,7 +687,14 @@ class Component extends DCLogic {
     if (this._mo) this._mo.disconnect();
   }
   renderVals() {
+    const sess = window.VS ? VS.session() : null;
     return {
+      logado: !!sess,
+      deslogado: !sess,
+      userNome: sess ? sess.nome : '',
+      userIniciais: sess ? sess.iniciais : '',
+      painelHref: sess ? 'Gerenciamento.dc.html?view=app' : 'Gerenciamento.dc.html',
+      painelLabel: sess ? 'Ir para o Gerenciamento' : 'Entrar (colaboradores)',
       toggleMenu: () => {
         const m = document.getElementById('mobile-menu');
         if (m) m.style.display = m.style.display === 'flex' ? 'none' : 'flex';

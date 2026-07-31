@@ -1,0 +1,10 @@
+# Mantém finais de linha estáveis no repo. Sem isso, editar um arquivo no
+# Windows reescreve o arquivo inteiro em CRLF e o diff vira ruído.
+* text=auto eol=lf
+
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.pdf  binary
+*.mp4  binary
