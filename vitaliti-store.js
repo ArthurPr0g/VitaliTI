@@ -23,6 +23,25 @@
   'use strict';
 
   /* ------------------------------------------------------------------ *
+   * guarda de idempotência — NÃO REMOVER
+   *
+   * Este script é carregado de dentro do <helmet> do template <x-dc>, e o
+   * runtime reinjeta o conteúdo do <helmet> no <head> a cada render. Ou
+   * seja: o arquivo é reexecutado várias vezes no mesmo carregamento de
+   * página (dá para ver no DevTools: 200 seguido de vários 304).
+   *
+   * A versão anterior, baseada em localStorage, não se importava — relia
+   * o storage a cada execução. Esta guarda estado em memória (db, snapshot,
+   * cliente Supabase, sessão). Sem esta guarda, cada reexecução cria um
+   * `window.VS` novo com `db = null`, e a UI que chamou VS.init() no closure
+   * antigo acaba lendo VS.load() do closure novo — que estoura.
+   *
+   * Mover as tags para o <head> real não funciona: o support.js depende da
+   * ordem em que os scripts entram e a página deixa de renderizar.
+   * ------------------------------------------------------------------ */
+  if (w.VS && w.VS.__vitalitiStore) return;
+
+  /* ------------------------------------------------------------------ *
    * configuração
    * A chave publishable é pública por definição — vai no bundle do
    * navegador e é protegida por RLS. Não confundir com a service_role,
@@ -358,14 +377,32 @@
     return res;
   }
 
+  /* RLS bloqueia em silêncio: quando a policy nega um update ou delete, o
+     PostgREST responde 200 com zero linhas, não um erro. Sem esta checagem
+     o store daria a gravação por feita e a UI mostraria "salvo" — o usuário
+     só descobriria no próximo reload, quando o dado voltasse ao que era.
+
+     Por isso todo update/delete pede as linhas de volta com .select() e
+     exige pelo menos uma. Zero linhas significa policy negando (ex.: um
+     Funcionário tentando excluir) ou registro já removido por outra pessoa. */
+  function checkAfetou(res, acao) {
+    if (res && res.error) throw res.error;
+    if (!res.data || !res.data.length) {
+      throw new Error('não foi possível ' + acao + ' — você não tem permissão para esta ação, ou o registro foi alterado por outro usuário. Recarregue a página.');
+    }
+    return res;
+  }
+
   function runOp(op) {
     var c = client();
     if (op.kind === 'settings') {
-      return c.from('settings').update(op.row).eq('id', 1).then(check);
+      return c.from('settings').update(op.row).eq('id', 1).select()
+        .then(function (r) { return checkAfetou(r, 'salvar as configurações'); });
     }
     var m = MAPS[op.table];
     if (op.kind === 'delete') {
-      return c.from(m.table).delete().eq('id', op.id).then(check);
+      return c.from(m.table).delete().eq('id', op.id).select()
+        .then(function (r) { return checkAfetou(r, 'excluir o registro'); });
     }
     if (op.kind === 'insert') {
       return c.from(m.table).insert(op.row).then(function (res) {
@@ -381,7 +418,8 @@
         return check(res);
       });
     }
-    return c.from(m.table).update(op.row).eq('id', op.id).then(check);
+    return c.from(m.table).update(op.row).eq('id', op.id).select()
+      .then(function (r) { return checkAfetou(r, 'salvar a alteração'); });
   }
 
   var queue = Promise.resolve();
@@ -492,6 +530,7 @@
    * API pública
    * ------------------------------------------------------------------ */
   w.VS = {
+    __vitalitiStore: true,   // marcador lido pela guarda de idempotência no topo
     init: init, load: load, persist: persist, reload: reload,
     uid: uid, today: today, addDays: addDays,
     brl: brl, dateBR: dateBR, monthLabel: monthLabel,

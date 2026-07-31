@@ -1294,7 +1294,17 @@ class Component extends DCLogic {
 
       cfg, cfgFields,
       setCfgCondicoes: setCfg('condicoes'), setCfgMensagem: setCfg('mensagem'), setCfgRodape: setCfg('rodape'),
-      saveCfg: () => this.runBusy('cfg', () => { Object.assign(db.settings, this.state.cfg, { validadeDias: Number(this.state.cfg.validadeDias) || 15 }); this.save(); this.toast('Configurações salvas'); }),
+      // Só administrador grava settings — é o que a policy do banco permite.
+      // Sem esta checagem o funcionário via "Configurações salvas" e o banco
+      // recusava em silêncio.
+      saveCfg: () => {
+        if (!VS.can(sess, 'config.editar')) { this.toast('Somente administradores alteram as configurações.', 'erro'); return; }
+        this.runBusy('cfg', () => {
+          Object.assign(db.settings, this.state.cfg, { validadeDias: Number(this.state.cfg.validadeDias) || 15 });
+          this.save();
+          this.toast('Configurações salvas');
+        });
+      },
       resetDb: () => {
         VS.reload().then((d) => {
           this.db = d;
