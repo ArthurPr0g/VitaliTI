@@ -1,0 +1,23 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="Vitaliti">
+  <!-- Favicon: cores explicitas de proposito. O vitaliti-mark.svg usa
+       currentColor, que num favicon nao herda nada e renderiza preto. -->
+  <circle cx="50" cy="50" r="50" fill="#d5d9de"/>
+  <g fill="none" stroke="#151b26" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="50" cy="50" r="39"/>
+    <!-- tres trilhas diagonais -->
+    <path d="M20 68 L45 43"/>
+    <path d="M28 78 L57 49"/>
+    <path d="M37 86 L51 72"/>
+    <!-- conectores ate os terminais -->
+    <path d="M45 43 V34"/>
+    <path d="M57 49 L62 44"/>
+    <path d="M48 58 H59"/>
+    <path d="M43 80 H53"/>
+  </g>
+  <g fill="#d5d9de" stroke="#151b26" stroke-width="4.5">
+    <circle cx="45" cy="27" r="6.5"/>
+    <circle cx="68" cy="38" r="6.5"/>
+    <circle cx="66" cy="58" r="6.5"/>
+    <circle cx="60" cy="80" r="6.5"/>
+  </g>
+</svg>
