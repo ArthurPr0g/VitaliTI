@@ -96,7 +96,60 @@
     /* `portrait` explicito: so "A4" deixa a orientacao por conta do dialogo
        de impressao, que lembra a ultima escolha do usuario e sai deitado. */
     @page{ size:A4 portrait; margin:12mm; }
+
+    /* O @page ja da a margem; o padding da folha aqui so roubaria altura. */
+    #vt-sheet{ padding:0 !important; }
+
+    /* Nunca quebrar uma linha de tabela no meio, e manter cada bloco inteiro
+       na mesma pagina. Se transbordar, quebra entre blocos -- nao no meio de
+       um produto. */
+    #vt-sheet tr, #vt-sheet table{ page-break-inside:avoid; }
+    #vt-sheet thead{ display:table-header-group; }
+    .vt-nobreak{ page-break-inside:avoid; }
   }
+
+  /* Densidade das tabelas conforme a quantidade de linhas. O que faz o
+     orcamento crescer sao os produtos, entao apertamos so o necessario para
+     caber numa folha, em vez de deixar tudo pequeno sempre.
+     Vale tambem na tela, senao a previa mentiria sobre o resultado impresso. */
+  /* As tabelas tem font-size inline, que ganha da classe -- por isso o
+     !important aqui. Sem ele so o padding encolhia e a fonte ficava igual. */
+  #vt-sheet.dc-2{ font-size:10px; line-height:1.35; }
+  #vt-sheet.dc-2 table{ font-size:10px !important; }
+  #vt-sheet.dc-2 td, #vt-sheet.dc-2 th{ padding:4px 9px !important; }
+  #vt-sheet.dc-2 .vt-pdf-fim{ margin-top:10px !important; }
+
+  #vt-sheet.dc-3{ font-size:9px; line-height:1.25; }
+  #vt-sheet.dc-3 table{ font-size:9px !important; }
+  #vt-sheet.dc-3 td, #vt-sheet.dc-3 th{ padding:2.5px 7px !important; }
+  #vt-sheet.dc-3 .vt-pdf-fim{ margin-top:8px !important; }
+  /* A descricao do servico e o primeiro item a sair quando falta espaco:
+     ela e util, mas nao e o que o cliente precisa para decidir. */
+  #vt-sheet.dc-3 .vt-pdf-desc{ display:none; }
+
+  #vt-sheet.dc-4{ font-size:8px; line-height:1.2; }
+  #vt-sheet.dc-4 table{ font-size:8px !important; }
+  #vt-sheet.dc-4 td, #vt-sheet.dc-4 th{ padding:1.5px 6px !important; }
+  #vt-sheet.dc-4 .vt-pdf-desc{ display:none; }
+  #vt-sheet.dc-4 .vt-pdf-fim{ margin-top:6px !important; }
+  #vt-sheet.dc-4 .vt-pdf-msg{ display:none; }
+
+  /* Os blocos fixos (cabecalho, titulo, dados do cliente) tem 64mm e nao
+     dependem da quantidade de itens. Apertar eles devolve espaco para as
+     linhas em qualquer densidade. */
+  #vt-sheet.dc-2 .vt-pdf-topo, #vt-sheet.dc-3 .vt-pdf-topo, #vt-sheet.dc-4 .vt-pdf-topo{
+    padding-bottom:8px !important; }
+  #vt-sheet.dc-2 .vt-pdf-tit, #vt-sheet.dc-3 .vt-pdf-tit, #vt-sheet.dc-4 .vt-pdf-tit{
+    margin:10px 0 9px !important; }
+  #vt-sheet.dc-3 .vt-pdf-cli, #vt-sheet.dc-4 .vt-pdf-cli{
+    padding:8px 10px !important; margin-bottom:9px !important; }
+
+  /* A mensagem de cortesia ("Agradecemos a oportunidade…") e a primeira coisa
+     dispensavel quando falta espaco: nao muda nada do que foi orcado. */
+  #vt-sheet.dc-3 .vt-pdf-msg{ display:none; }
+  #vt-sheet.dc-3 .vt-pdf-assin, #vt-sheet.dc-4 .vt-pdf-assin{ margin-top:12px !important; }
+  #vt-sheet.dc-3 .vt-pdf-rod, #vt-sheet.dc-4 .vt-pdf-rod{ margin-top:9px !important; }
+  #vt-sheet.dc-3 .vt-pdf-tot > div, #vt-sheet.dc-4 .vt-pdf-tot > div{ padding-top:1px !important; padding-bottom:1px !important; }
 </style>
 </helmet>
 
@@ -725,8 +778,8 @@
       <button type="button" onClick="{{ closePdf }}" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer">Fechar</button>
     </div>
   </div>
-  <div id="vt-sheet" style="width:210mm;min-height:297mm;margin:26px auto;background:#fff;color:#0f2147;padding:16mm 15mm;box-shadow:0 30px 80px -30px rgba(0,0,0,.6);font-size:11px;line-height:1.5">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding-bottom:14px;border-bottom:3px solid #1d4ed8">
+  <div id="vt-sheet" class="{{ pdf.dens }}" style="width:210mm;min-height:297mm;margin:26px auto;background:#fff;color:#0f2147;padding:16mm 15mm;box-shadow:0 30px 80px -30px rgba(0,0,0,.6);font-size:11px;line-height:1.5">
+    <div class="vt-pdf-topo" style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding-bottom:14px;border-bottom:3px solid #1d4ed8">
       <div style="display:flex;align-items:center;gap:14px">
         <img src="assets/logo-vitaliti-clean.png" alt="" style="height:46px;width:auto">
       </div>
@@ -738,7 +791,7 @@
       </div>
     </div>
 
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:18px 0 16px">
+    <div class="vt-pdf-tit" style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:18px 0 16px">
       <div>
         <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.4px">Proposta comercial</div>
       </div>
@@ -749,7 +802,7 @@
       </div>
     </div>
 
-    <div style="background:#f4f7fc;border:1px solid #e6ecf5;border-radius:8px;padding:12px 14px;margin-bottom:16px">
+    <div class="vt-pdf-cli" style="background:#f4f7fc;border:1px solid #e6ecf5;border-radius:8px;padding:12px 14px;margin-bottom:16px">
       <div style="font-size:9.5px;font-weight:800;letter-spacing:.6px;color:#64748b;margin-bottom:6px">DADOS DO CLIENTE</div>
       <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:6px 18px;font-size:11px">
         <div><strong>{{ pdf.clienteNome }}</strong></div><div>CPF/CNPJ: {{ pdf.clienteDoc }}</div>
@@ -771,7 +824,7 @@
         <sc-for list="{{ pdf.servicos }}" as="i" hint-placeholder-count="3">
           <tr style="border-bottom:1px solid #e6ecf5">
             <td style="padding:9px 10px;color:#64748b;vertical-align:top">{{ i.n }}</td>
-            <td style="padding:9px 10px"><strong>{{ i.nome }}</strong><div style="color:#64748b;font-size:10px;margin-top:2px">{{ i.descricao }}</div></td>
+            <td style="padding:9px 10px"><strong>{{ i.nome }}</strong><div class="vt-pdf-desc" style="color:#64748b;font-size:10px;margin-top:2px">{{ i.descricao }}</div></td>
             <td style="padding:9px 10px;text-align:right;font-weight:700;vertical-align:top">{{ i.valor }}</td>
           </tr>
         </sc-for>
@@ -814,29 +867,31 @@
     </table>
     </sc-if>
 
-    <div style="display:flex;justify-content:flex-end;margin-top:14px">
-      <div style="width:280px;font-size:11px">
-        <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="color:#64748b">Serviços</span><span>{{ pdf.totalServicos }}</span></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="color:#64748b">Produtos utilizados</span><span>{{ pdf.totalProdutos }}</span></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #e6ecf5"><span style="color:#64748b">Subtotal</span><span>{{ pdf.subtotal }}</span></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e6ecf5"><span style="color:#64748b">Desconto</span><span>− {{ pdf.desconto }}</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 12px;margin-top:8px;background:#0f2147;color:#fff;border-radius:8px"><span style="font-weight:700">TOTAL</span><span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px">{{ pdf.total }}</span></div>
+    <div class="vt-nobreak vt-pdf-fim" style="display:flex;justify-content:flex-end;margin-top:12px">
+      <div class="vt-pdf-tot" style="width:280px;font-size:11px">
+        <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:#64748b">Serviços</span><span>{{ pdf.totalServicos }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:#64748b">Produtos utilizados</span><span>{{ pdf.totalProdutos }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid #e6ecf5"><span style="color:#64748b">Subtotal</span><span>{{ pdf.subtotal }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #e6ecf5"><span style="color:#64748b">Desconto</span><span>− {{ pdf.desconto }}</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:7px 12px;margin-top:6px;background:#0f2147;color:#fff;border-radius:8px"><span style="font-weight:700">TOTAL</span><span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px">{{ pdf.total }}</span></div>
       </div>
     </div>
 
-    <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:10.5px">
-      <div><div style="font-size:9.5px;font-weight:800;letter-spacing:.6px;color:#64748b;margin-bottom:5px">CONDIÇÕES COMERCIAIS</div><div style="line-height:1.6">{{ pdf.condicoes }}</div></div>
-      <div><div style="font-size:9.5px;font-weight:800;letter-spacing:.6px;color:#64748b;margin-bottom:5px">OBSERVAÇÕES</div><div style="line-height:1.6">{{ pdf.obs }}</div></div>
+    <div class="vt-nobreak vt-pdf-fim">
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:10.5px">
+        <div><div style="font-size:9.5px;font-weight:800;letter-spacing:.6px;color:#64748b;margin-bottom:4px">CONDIÇÕES COMERCIAIS</div><div style="line-height:1.5">{{ pdf.condicoes }}</div></div>
+        <div><div style="font-size:9.5px;font-weight:800;letter-spacing:.6px;color:#64748b;margin-bottom:4px">OBSERVAÇÕES</div><div style="line-height:1.5">{{ pdf.obs }}</div></div>
+      </div>
+
+      <div class="vt-pdf-msg" style="margin-top:10px;background:#f4f7fc;border-left:3px solid #38bdf8;padding:7px 13px;font-size:10.5px;line-height:1.45;color:#334155">{{ pdf.mensagem }}</div>
+
+      <div class="vt-pdf-assin" style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:40px;font-size:10.5px;text-align:center">
+        <div><div style="border-top:1px solid #0f2147;padding-top:6px;font-weight:700">Prestador</div><div style="color:#64748b;margin-top:2px">{{ pdf.empresa }}</div></div>
+        <div><div style="border-top:1px solid #0f2147;padding-top:6px;font-weight:700">Sacado</div><div style="color:#64748b;margin-top:2px">{{ pdf.clienteNome }}</div></div>
+      </div>
+
+      <div class="vt-pdf-rod" style="margin-top:16px;padding-top:8px;border-top:1px solid #e6ecf5;color:#64748b;font-size:9.5px;line-height:1.5;text-align:center">{{ pdf.rodape }}</div>
     </div>
-
-    <div style="margin-top:16px;background:#f4f7fc;border-left:3px solid #38bdf8;padding:10px 14px;font-size:10.5px;line-height:1.6;color:#334155">{{ pdf.mensagem }}</div>
-
-    <div style="margin-top:34px;display:grid;grid-template-columns:1fr 1fr;gap:40px;font-size:10.5px;text-align:center">
-      <div><div style="border-top:1px solid #0f2147;padding-top:7px;font-weight:700">Prestador</div><div style="color:#64748b;margin-top:2px">{{ pdf.empresa }}</div></div>
-      <div><div style="border-top:1px solid #0f2147;padding-top:7px;font-weight:700">Sacado</div><div style="color:#64748b;margin-top:2px">{{ pdf.clienteNome }}</div></div>
-    </div>
-
-    <div style="margin-top:26px;padding-top:10px;border-top:1px solid #e6ecf5;color:#64748b;font-size:9.5px;line-height:1.6;text-align:center">{{ pdf.rodape }}</div>
   </div>
 </div>
 </sc-if>
@@ -1542,6 +1597,16 @@ class Component extends DCLogic {
         })),
         totalServicos: VS.brl(tt.servicos), totalProdutos: VS.brl(tt.produtos),
         temServicos: pp.servicos.length > 0, temProdutos: pp.produtos.length > 0,
+        // Aperta as tabelas conforme a quantidade de linhas, para caber numa
+        // folha so. Os limites vieram da altura util do A4 retrato (273mm)
+        // menos o que os blocos fixos ocupam.
+        dens: (() => {
+          const n = pp.servicos.length + pp.produtos.length;
+          if (n <= 9) return '';
+          if (n <= 14) return 'dc-2';
+          if (n <= 24) return 'dc-3';
+          return 'dc-4';   // acima disso vai para 2 páginas, sem espremer mais
+        })(),
         subtotal: VS.brl(tt.subtotal), desconto: VS.brl(tt.desconto), total: VS.brl(tt.total),
         condicoes: pq.condicoes || cfgNow.condicoes, obs: pq.obs || '—', mensagem: cfgNow.mensagem, rodape: cfgNow.rodape
       };
