@@ -486,6 +486,11 @@
                 <button type="button" onClick="{{ q.pdf }}" title="Ver PDF" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s" style-hover="color:var(--brand2);border-color:var(--brand2)">
                   <span style="width:15px;height:15px;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="9" y1="18" x2="13" y2="18"/></svg></span>
                 </button>
+                <sc-if value="{{ q.podeExcluir }}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{ q.del }}" title="Excluir orçamento" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s" style-hover="color:#dc2626;border-color:rgba(220,38,38,.45)">
+                  <span style="width:15px;height:15px;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
+                </button>
+                </sc-if>
               </div>
             </div>
           </sc-for>
@@ -578,6 +583,9 @@
           <button type="button" onClick="{{ ed.save }}" disabled="{{ busySave }}" style="background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;border:0;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 14px 28px -14px rgba(29,78,216,.85)">{{ saveQuoteLabel }}</button>
           <button type="button" onClick="{{ ed.savePdf }}" disabled="{{ busyPdf }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:12px;padding:13px;font-size:14.5px;font-weight:700;cursor:pointer">{{ savePdfLabel }}</button>
           <button type="button" onClick="{{ ed.cancel }}" style="background:none;border:0;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer">Cancelar</button>
+          <sc-if value="{{ ed.podeExcluir }}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{ ed.del }}" style="background:none;border:0;color:#dc2626;font-size:13.5px;font-weight:700;cursor:pointer;padding-top:2px">Excluir orçamento</button>
+          </sc-if>
         </div>
       </div>
     </sc-if>
@@ -970,6 +978,15 @@ class Component extends DCLogic {
     } else if (c.tipo === 'servico') {
       this.db.services = this.db.services.filter(x => x.id !== c.id);
       this.toast('Serviço excluído', 'info');
+    } else if (c.tipo === 'orcamento') {
+      const q = this.db.quotes.filter(x => x.id === c.id)[0];
+      this.db.quotes = this.db.quotes.filter(x => x.id !== c.id);
+      if (q) VS.logAction('orcamento', q.id, 'Orçamento nº ' + q.numero + ' excluído', this.state.session.nome);
+      this.toast('Orçamento excluído', 'info');
+      // Se o PDF ou o editor deste orçamento estiver aberto, fecha: continuar
+      // exibindo um registro que nao existe mais so confunde.
+      if (this.state.pdfId === c.id) this.setState({ pdfId: null });
+      if (this.state.draft && this.state.draft.id === c.id) this.setState({ draft: null, view: 'orcamentos' });
     }
     this.setState({ confirm: null });
     this.save();
@@ -1143,7 +1160,13 @@ class Component extends DCLogic {
       resumo: q.itens.length + ' itens · ' + (q.itens[0] ? q.itens[0].nome : '—'), total: VS.brl(VS.quoteTotals(q).total),
       status: q.status, color: this.st(q.status).color, tint: this.st(q.status).tint,
       open: () => this.openEditor(q),
-      pdf: (e) => { e.stopPropagation(); this.setState({ pdfId: q.id }); }
+      pdf: (e) => { e.stopPropagation(); this.setState({ pdfId: q.id }); },
+      // A flag vai na propria linha, nao no topo do renderVals: nenhum outro
+      // sc-if do arquivo le variavel de topo de dentro de um sc-for, entao
+      // nao da para assumir que o runtime resolve esse escopo.
+      podeExcluir: VS.can(sess, 'excluir'),
+      // stopPropagation porque a linha inteira abre o editor no clique
+      del: (e) => { e.stopPropagation(); this.askDelete('orcamento', q.id, 'Orçamento nº ' + q.numero + ' — ' + this.clientName(q.clienteId)); }
     }));
 
     /* editor */
@@ -1180,7 +1203,11 @@ class Component extends DCLogic {
       })),
       save: () => this.runBusy('save', () => this.persistDraft()),
       savePdf: () => this.runBusy('pdf', () => this.persistDraft((q) => this.setState({ draft: null, view: 'orcamentos', pdfId: q.id })), 550),
-      cancel: () => this.setState({ draft: null, view: 'orcamentos' })
+      cancel: () => this.setState({ draft: null, view: 'orcamentos' }),
+      // So aparece em orcamento ja salvo: um rascunho novo nao tem o que
+      // excluir -- para descartar, o botao e "Cancelar".
+      podeExcluir: !!d.id && VS.can(sess, 'excluir'),
+      del: () => this.askDelete('orcamento', d.id, 'Orçamento nº ' + d.numero + ' — ' + (d.clienteId ? this.clientName(d.clienteId) : 'sem cliente'))
     };
 
     /* pdf */
@@ -1291,8 +1318,12 @@ class Component extends DCLogic {
       modalFields, modalErro: m ? m.erro : '',
       closeModal: () => this.setState({ modal: null }), saveModal: () => this.runBusy('modal', this.saveModal), stop: (e) => e.stopPropagation(),
 
-      confirmOpen: !!s.confirm, confirmTitle: s.confirm ? 'Excluir ' + (s.confirm.tipo === 'cliente' ? 'cliente' : 'serviço') + '?' : '',
-      confirmText: s.confirm ? '“' + s.confirm.nome + '” será removido permanentemente' + (s.confirm.tipo === 'cliente' ? ', junto com os orçamentos vinculados.' : '.') : '',
+      confirmOpen: !!s.confirm,
+      confirmTitle: s.confirm ? 'Excluir ' + ({ cliente: 'cliente', servico: 'serviço', orcamento: 'orçamento' }[s.confirm.tipo] || 'registro') + '?' : '',
+      confirmText: s.confirm
+        ? '“' + s.confirm.nome + '” será removido permanentemente' +
+          (s.confirm.tipo === 'cliente' ? ', junto com os orçamentos vinculados.' : '.')
+        : '',
       closeConfirm: () => this.setState({ confirm: null }), doConfirm: () => this.runBusy('del', this.doConfirm),
 
       cfg, cfgFields,
