@@ -80,6 +80,14 @@
     .vt-login{ grid-template-columns:1fr !important; }
     .vt-loginart{ display:none !important; }
   }
+  /* Editor de orcamento em tela estreita: os campos numericos descem para
+     uma segunda linha em vez de espremer tudo lado a lado. */
+  @media (max-width:760px){
+    .vt-svc-head{ grid-template-columns:1fr 44px !important; }
+    .vt-svc-head > input:first-child{ grid-column:1 / -1; }
+    .vt-prod-row{ grid-template-columns:1fr 64px 96px 40px !important; }
+    .vt-prod-row > input:first-child{ grid-column:1 / -1; }
+  }
   @media print{
     body{ background:#fff; }
     #vt-shell,#vt-pdfbar{ display:none !important; }
@@ -530,25 +538,50 @@
               <span style="width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800">2</span>
               <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16.5px">Serviços</div>
             </div>
-            <div style="display:flex;gap:10px;margin-bottom:16px">
-              <select value="{{ ed.addId }}" onChange="{{ ed.setAdd }}" style="flex:1;border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none;cursor:pointer">
-                <option value="">Adicionar serviço…</option>
-                <sc-for list="{{ serviceOpts }}" as="s" hint-placeholder-count="6"><option value="{{ s.id }}">{{ s.label }}</option></sc-for>
-              </select>
-              <button type="button" onClick="{{ ed.addItem }}" style="background:var(--brand);color:#fff;border:0;border-radius:11px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer">Adicionar</button>
-            </div>
-            <sc-for list="{{ ed.itens }}" as="i" hint-placeholder-count="3">
-              <div style="display:grid;grid-template-columns:1fr 92px 120px 110px 36px;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)">
-                <div style="min-width:0"><div style="font-size:14px;font-weight:700">{{ i.nome }}</div><div style="color:var(--muted);font-size:12px;margin-top:2px">{{ i.unidade }}</div></div>
-                <input type="number" min="1" value="{{ i.qtd }}" onInput="{{ i.setQtd }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:9px;padding:9px 10px;font-size:14px;font-weight:700;outline:none;width:100%">
-                <input type="number" min="0" step="0.01" value="{{ i.valor }}" onInput="{{ i.setValor }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:9px;padding:9px 10px;font-size:14px;font-weight:700;outline:none;width:100%">
-                <div style="font-size:14px;font-weight:700;text-align:right">{{ i.subtotal }}</div>
-                <button type="button" onClick="{{ i.remove }}" title="Remover" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;transition:color .2s" style-hover="color:#dc2626">×</button>
+            <sc-for list="{{ ed.servicos }}" as="s" hint-placeholder-count="2">
+              <div style="border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;background:var(--soft)">
+
+                <div class="vt-svc-head" style="display:grid;grid-template-columns:1fr 150px 36px;gap:10px;align-items:center">
+                  <input value="{{ s.nome }}" onInput="{{ s.setNome }}" placeholder="Nome do serviço (ex.: CFTV)" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14.5px;font-weight:700;outline:none;width:100%">
+                  <input type="number" min="0" step="0.01" inputmode="decimal" value="{{ s.valor }}" onInput="{{ s.setValor }}" placeholder="Mão de obra" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14px;font-weight:700;outline:none;width:100%">
+                  <button type="button" onClick="{{ s.remove }}" title="Remover serviço" style="width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;font-size:17px;line-height:1;transition:color .2s" style-hover="color:#dc2626">×</button>
+                </div>
+
+                <div style="margin-top:12px">
+                  <div style="font-size:11.5px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:7px">Produtos deste serviço</div>
+
+                  <sc-for list="{{ s.produtos }}" as="p" hint-placeholder-count="2">
+                    <div class="vt-prod-row" style="display:grid;grid-template-columns:1fr 74px 110px 96px 32px;gap:8px;align-items:center;margin-bottom:7px">
+                      <input value="{{ p.nome }}" onInput="{{ p.setNome }}" placeholder="Produto (ex.: Câmera IP)" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:9px;padding:9px 10px;font-size:13.5px;outline:none;width:100%">
+                      <input type="number" min="0" step="1" inputmode="numeric" value="{{ p.qtd }}" onInput="{{ p.setQtd }}" placeholder="Qtd" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:9px;padding:9px 10px;font-size:13.5px;font-weight:700;outline:none;width:100%">
+                      <input type="number" min="0" step="0.01" inputmode="decimal" value="{{ p.valor }}" onInput="{{ p.setValor }}" placeholder="Valor un." style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:9px;padding:9px 10px;font-size:13.5px;font-weight:700;outline:none;width:100%">
+                      <div style="font-size:13.5px;font-weight:700;text-align:right">{{ p.subtotal }}</div>
+                      <button type="button" onClick="{{ p.remove }}" title="Remover produto" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;font-size:16px;line-height:1;transition:color .2s" style-hover="color:#dc2626">×</button>
+                    </div>
+                  </sc-for>
+
+                  <sc-if value="{{ s.semProdutos }}" hint-placeholder-val="{{ false }}">
+                    <div style="color:var(--muted);font-size:13px;padding:4px 0 8px">Nenhum produto — este serviço é só mão de obra.</div>
+                  </sc-if>
+
+                  <button type="button" onClick="{{ s.addProduto }}" style="border:1px dashed var(--line);background:none;color:var(--brand2);border-radius:9px;padding:9px 14px;font-size:13.5px;font-weight:700;cursor:pointer">+ Adicionar produto</button>
+                </div>
+
+                <textarea rows="2" value="{{ s.descricao }}" onInput="{{ s.setDescricao }}" placeholder="Descrição / observações deste serviço" style="width:100%;margin-top:12px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;resize:vertical;line-height:1.55"></textarea>
+
+                <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:flex-end;margin-top:10px;font-size:13px">
+                  <span style="color:var(--muted);font-weight:600">Mão de obra <strong style="color:var(--text)">{{ s.valorFmt }}</strong></span>
+                  <span style="color:var(--muted);font-weight:600">Produtos <strong style="color:var(--text)">{{ s.totalProdutos }}</strong></span>
+                  <span style="font-weight:800">Total {{ s.total }}</span>
+                </div>
               </div>
             </sc-for>
+
             <sc-if value="{{ ed.semItens }}" hint-placeholder-val="{{ true }}">
               <div style="border:1px dashed var(--line);border-radius:12px;padding:26px;text-align:center;color:var(--muted);font-size:14px">Nenhum serviço adicionado ainda.</div>
             </sc-if>
+
+            <button type="button" onClick="{{ ed.addServico }}" style="width:100%;margin-top:4px;background:var(--brand);color:#fff;border:0;border-radius:11px;padding:13px;font-size:14.5px;font-weight:700;cursor:pointer">+ Adicionar serviço</button>
           </div>
 
           <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)">
@@ -570,8 +603,10 @@
         <div style="position:sticky;top:96px;align-self:start;display:flex;flex-direction:column;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)">
           <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16.5px">Prévia</div>
           <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--muted);font-weight:600">Cliente</span><span style="font-weight:700;text-align:right">{{ ed.clienteNome }}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--muted);font-weight:600">Itens</span><span style="font-weight:700">{{ ed.nItens }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--muted);font-weight:600">Serviços</span><span style="font-weight:700">{{ ed.nItens }}</span></div>
           <div style="height:1px;background:var(--line)"></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--muted);font-weight:600">Mão de obra</span><span style="font-weight:700">{{ ed.totalServicos }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--muted);font-weight:600">Produtos</span><span style="font-weight:700">{{ ed.totalProdutos }}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--muted);font-weight:600">Subtotal</span><span style="font-weight:700">{{ ed.subtotal }}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--muted);font-weight:600">Desconto</span><span style="font-weight:700;color:#dc2626">− {{ ed.desconto }}</span></div>
           <div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:6px;border-top:1px solid var(--line)"><span style="font-size:14px;font-weight:700">Total</span><span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:25px;letter-spacing:-.8px">{{ ed.total }}</span></div>
@@ -684,13 +719,22 @@
       </thead>
       <tbody>
         <sc-for list="{{ pdf.itens }}" as="i" hint-placeholder-count="3">
-          <tr style="border-bottom:1px solid #e6ecf5">
+          <tr style="border-bottom:1px solid #e6ecf5;background:#f7f9fc">
             <td style="padding:9px 10px;color:#64748b">{{ i.n }}</td>
             <td style="padding:9px 10px"><strong>{{ i.nome }}</strong><div style="color:#64748b;font-size:10px;margin-top:2px">{{ i.descricao }}</div></td>
-            <td style="padding:9px 10px;text-align:center">{{ i.qtd }}</td>
-            <td style="padding:9px 10px;text-align:right">{{ i.valor }}</td>
-            <td style="padding:9px 10px;text-align:right;font-weight:700">{{ i.subtotal }}</td>
+            <td style="padding:9px 10px;text-align:center;color:#64748b">serviço</td>
+            <td style="padding:9px 10px;text-align:right"></td>
+            <td style="padding:9px 10px;text-align:right;font-weight:700">{{ i.valor }}</td>
           </tr>
+          <sc-for list="{{ i.produtos }}" as="p" hint-placeholder-count="2">
+            <tr style="border-bottom:1px solid #eef2f8">
+              <td style="padding:7px 10px"></td>
+              <td style="padding:7px 10px;padding-left:22px;color:#334155">{{ p.nome }}</td>
+              <td style="padding:7px 10px;text-align:center">{{ p.qtd }}</td>
+              <td style="padding:7px 10px;text-align:right">{{ p.valor }}</td>
+              <td style="padding:7px 10px;text-align:right">{{ p.subtotal }}</td>
+            </tr>
+          </sc-for>
         </sc-for>
       </tbody>
     </table>
@@ -1046,6 +1090,7 @@ class Component extends DCLogic {
     const d = this.state.draft;
     if (!d.clienteId) { this.toast('Selecione um cliente.', 'erro'); return null; }
     if (!d.itens.length) { this.toast('Adicione ao menos um serviço.', 'erro'); return null; }
+    if (d.itens.some(sv => !String(sv.nome || '').trim())) { this.toast('Dê um nome a todos os serviços.', 'erro'); return null; }
     let saved;
     if (d.id) {
       const q = this.db.quotes.filter(x => x.id === d.id)[0];
@@ -1081,7 +1126,9 @@ class Component extends DCLogic {
     };
     const t = titles[v] || titles.dash;
 
-    const navDef = [['dash', 'Dashboard', ICON.dash], ['clientes', 'Clientes', ICON.users], ['servicos', 'Serviços', ICON.box], ['orcamentos', 'Orçamentos', ICON.file], ['config', 'Configurações', ICON.gear]];
+    // A pagina de Servicos saiu: servico agora e digitado dentro do proprio
+    // orcamento, junto com os produtos que ele consome (item 7).
+    const navDef = [['dash', 'Dashboard', ICON.dash], ['clientes', 'Clientes', ICON.users], ['orcamentos', 'Orçamentos', ICON.file], ['config', 'Configurações', ICON.gear]];
     const nav = navDef.map(n => {
       const active = v === n[0] || (n[0] === 'clientes' && v === 'cliente') || (n[0] === 'orcamentos' && v === 'editor');
       return {
@@ -1186,7 +1233,15 @@ class Component extends DCLogic {
     const qList = this.filteredQuotes();
     const quoteRows = qList.map(q => ({
       numero: q.numero, cliente: this.clientName(q.clienteId), data: VS.dateBR(q.data), validade: VS.dateBR(q.validade),
-      resumo: q.itens.length + ' itens · ' + (q.itens[0] ? q.itens[0].nome : '—'), total: VS.brl(VS.quoteTotals(q).total),
+      resumo: (() => {
+        const svs = q.itens || [];
+        const nProd = svs.reduce((a, x) => a + ((x.produtos || []).length), 0);
+        const nomes = svs.map(x => x.nome).filter(Boolean).join(', ');
+        const cab = svs.length + (svs.length === 1 ? ' serviço' : ' serviços') +
+                    (nProd ? ' · ' + nProd + (nProd === 1 ? ' produto' : ' produtos') : '');
+        return nomes ? cab + ' · ' + nomes : cab;
+      })(),
+      total: VS.brl(VS.quoteTotals(q).total),
       status: q.status, color: this.st(q.status).color, tint: this.st(q.status).tint,
       open: () => this.openEditor(q),
       pdf: (e) => { e.stopPropagation(); this.setState({ pdfId: q.id }); },
@@ -1207,6 +1262,7 @@ class Component extends DCLogic {
       descTipo: d.descTipo, descValor: d.descValor, condicoes: d.condicoes, obs: d.obs, addId: s.addId || '',
       clienteNome: d.clienteId ? this.clientName(d.clienteId) : 'Não selecionado',
       nItens: String(d.itens.length), semItens: d.itens.length === 0,
+      totalServicos: VS.brl(dt.servicos), totalProdutos: VS.brl(dt.produtos),
       subtotal: VS.brl(dt.subtotal), desconto: VS.brl(dt.desconto), total: VS.brl(dt.total),
       setCliente: (e) => setD({ clienteId: e.target.value }),
       setData: (e) => setD({ data: e.target.value }),
@@ -1216,20 +1272,53 @@ class Component extends DCLogic {
       setDescValor: (e) => setD({ descValor: Math.max(0, Number(e.target.value) || 0) }),
       setCondicoes: (e) => setD({ condicoes: e.target.value }),
       setObs: (e) => setD({ obs: e.target.value }),
-      setAdd: (e) => this.setState({ addId: e.target.value }),
-      addItem: () => {
-        const srv = db.services.filter(x => x.id === (this.state.addId || ''))[0];
-        if (!srv) { this.toast('Escolha um serviço na lista.', 'erro'); return; }
-        setD({ itens: d.itens.concat([{ id: VS.uid('it'), servicoId: srv.id, nome: srv.nome, descricao: srv.descricao, unidade: srv.unidade, qtd: 1, valor: srv.valor }]) });
-        this.setState({ addId: '' });
-      },
-      itens: d.itens.map((it, idx) => ({
-        nome: it.nome, unidade: it.unidade, qtd: it.qtd, valor: it.valor,
-        subtotal: VS.brl((Number(it.qtd) || 0) * (Number(it.valor) || 0)),
-        setQtd: (e) => { const arr = d.itens.slice(); arr[idx] = Object.assign({}, it, { qtd: Math.max(1, Number(e.target.value) || 1) }); setD({ itens: arr }); },
-        setValor: (e) => { const arr = d.itens.slice(); arr[idx] = Object.assign({}, it, { valor: Math.max(0, Number(e.target.value) || 0) }); setD({ itens: arr }); },
-        remove: () => setD({ itens: d.itens.filter((_, i2) => i2 !== idx) })
-      })),
+      addServico: () => setD({
+        itens: d.itens.concat([{ id: VS.uid(), nome: '', valor: 0, descricao: '', produtos: [] }])
+      }),
+
+      /* Um serviço tem nome, valor de mão de obra, descrição e N produtos.
+         Toda alteração reescreve o array inteiro em vez de mutar no lugar:
+         o React só re-renderiza se a referência mudar. */
+      servicos: d.itens.map((sv, idx) => {
+        const produtos = sv.produtos || [];
+        const trocaServico = (patch) => {
+          const arr = d.itens.slice();
+          arr[idx] = Object.assign({}, sv, patch);
+          setD({ itens: arr });
+        };
+        const trocaProdutos = (novos) => trocaServico({ produtos: novos });
+        const totalProdutos = produtos.reduce((a, p) => a + (Number(p.qtd) || 0) * (Number(p.valor) || 0), 0);
+
+        return {
+          nome: sv.nome, valor: sv.valor, descricao: sv.descricao || '',
+          valorFmt: VS.brl(Number(sv.valor) || 0),
+          totalProdutos: VS.brl(totalProdutos),
+          total: VS.brl((Number(sv.valor) || 0) + totalProdutos),
+          semProdutos: produtos.length === 0,
+
+          setNome: (e) => trocaServico({ nome: e.target.value }),
+          setValor: (e) => trocaServico({ valor: Math.max(0, Number(e.target.value) || 0) }),
+          setDescricao: (e) => trocaServico({ descricao: e.target.value }),
+          remove: () => setD({ itens: d.itens.filter((_, i2) => i2 !== idx) }),
+          addProduto: () => trocaProdutos(produtos.concat([{ id: VS.uid(), nome: '', qtd: 1, valor: 0 }])),
+
+          produtos: produtos.map((p, pIdx) => {
+            const trocaProduto = (patch) => {
+              const arr = produtos.slice();
+              arr[pIdx] = Object.assign({}, p, patch);
+              trocaProdutos(arr);
+            };
+            return {
+              nome: p.nome, qtd: p.qtd, valor: p.valor,
+              subtotal: VS.brl((Number(p.qtd) || 0) * (Number(p.valor) || 0)),
+              setNome: (e) => trocaProduto({ nome: e.target.value }),
+              setQtd: (e) => trocaProduto({ qtd: Math.max(0, Number(e.target.value) || 0) }),
+              setValor: (e) => trocaProduto({ valor: Math.max(0, Number(e.target.value) || 0) }),
+              remove: () => trocaProdutos(produtos.filter((_, i2) => i2 !== pIdx))
+            };
+          })
+        };
+      }),
       save: () => this.runBusy('save', () => this.persistDraft()),
       savePdf: () => this.runBusy('pdf', () => this.persistDraft((q) => this.setState({ draft: null, view: 'orcamentos', pdfId: q.id })), 550),
       cancel: () => this.setState({ draft: null, view: 'orcamentos' }),
@@ -1253,7 +1342,19 @@ class Component extends DCLogic {
         autor: sess ? sess.nome : 'Vitaliti', clienteNome: this.clientCompany(c), clienteDoc: c.doc || '—',
         clienteEndereco: c.endereco || '—', clienteCidade: (c.cidade || '') + (c.uf ? ' — ' + c.uf : '') + (c.cep ? ' · CEP ' + c.cep : ''),
         clienteTelefone: c.telefone || '—', clienteEmail: c.email || '—',
-        itens: pq.itens.map((i, n) => ({ n: n + 1, nome: i.nome, descricao: i.descricao || '', qtd: i.qtd + ' ' + (i.unidade || ''), valor: VS.brl(i.valor), subtotal: VS.brl(i.qtd * i.valor) })),
+        // Cada serviço vira uma linha em negrito com a mão de obra, seguida
+        // das linhas dos produtos que ele consome.
+        itens: (pq.itens || []).map((sv, n) => ({
+          n: n + 1, nome: sv.nome || 'Serviço', descricao: sv.descricao || '',
+          valor: VS.brl(Number(sv.valor) || 0),
+          produtos: (sv.produtos || []).map(p => ({
+            nome: p.nome || '—', qtd: String(Number(p.qtd) || 0),
+            valor: VS.brl(Number(p.valor) || 0),
+            subtotal: VS.brl((Number(p.qtd) || 0) * (Number(p.valor) || 0))
+          }))
+        })),
+        totalServicos: VS.brl(tt.servicos), totalProdutos: VS.brl(tt.produtos),
+        temProdutos: tt.produtos > 0,
         subtotal: VS.brl(tt.subtotal), desconto: VS.brl(tt.desconto), total: VS.brl(tt.total),
         condicoes: pq.condicoes || cfgNow.condicoes, obs: pq.obs || '—', mensagem: cfgNow.mensagem, rodape: cfgNow.rodape
       };
@@ -1339,7 +1440,13 @@ class Component extends DCLogic {
       onOrcSort: (e) => this.setState({ orcSort: e.target.value }),
       newQuote: () => this.openEditor(null),
 
-      ed, clientOpts: db.clients.slice().sort((a, b) => a.nome.localeCompare(b.nome)),
+      // O <option> mostra `nome`, que apos o item 6 e a pessoa de contato e
+      // fica vazio na maioria dos cadastros. Aqui `nome` recebe o rotulo
+      // composto ("Contato — Empresa"), senao a lista sai em branco.
+      ed,
+      clientOpts: db.clients
+        .map(c => ({ id: c.id, nome: this.clientLabel(c) }))
+        .sort((a, b) => a.nome.localeCompare(b.nome)),
       serviceOpts: db.services.map(x => ({ id: x.id, label: x.nome + ' — ' + VS.brl(x.valor) })),
 
       pdf, printPdf: () => window.print(), closePdf: () => this.setState({ pdfId: null }),

@@ -82,11 +82,37 @@
   var maskCep = function (s) { return digits(s).slice(0, 8).replace(/(\d{5})(\d{1,3})/, '$1-$2'); };
   var sanitize = function (s) { return String(s == null ? '' : s).replace(/[<>]/g, '').trim().slice(0, 400); };
 
+  /* Totais do orçamento.
+   *
+   * `itens` é a lista de SERVIÇOS. Cada serviço tem `valor` (a mão de obra)
+   * e `produtos`, cada produto com `qtd` e `valor` unitário. O total separa
+   * serviços de produtos porque a proposta precisa mostrar os dois em linhas
+   * distintas — era o que o dono vinha fazendo à mão no campo de observações.
+   *
+   * Orçamentos gravados antes da conversão são lista plana com `qtd`/`valor`
+   * e sem `produtos`. O fallback abaixo evita que um registro não convertido
+   * apareça zerado na tela.
+   */
   function quoteTotals(q) {
-    var sub = (q.itens || []).reduce(function (a, i) { return a + (Number(i.qtd) || 0) * (Number(i.valor) || 0); }, 0);
+    var lista = q.itens || [];
+    var servicos = 0, produtos = 0;
+
+    lista.forEach(function (s) {
+      if (s && s.produtos) {
+        servicos += Number(s.valor) || 0;
+        (s.produtos || []).forEach(function (p) {
+          produtos += (Number(p.qtd) || 0) * (Number(p.valor) || 0);
+        });
+      } else if (s) {
+        // formato antigo
+        servicos += (Number(s.qtd) || 0) * (Number(s.valor) || 0);
+      }
+    });
+
+    var sub = servicos + produtos;
     var desc = q.descTipo === '%' ? sub * (Number(q.descValor) || 0) / 100 : (Number(q.descValor) || 0);
     if (desc > sub) desc = sub;
-    return { subtotal: sub, desconto: desc, total: sub - desc };
+    return { servicos: servicos, produtos: produtos, subtotal: sub, desconto: desc, total: sub - desc };
   }
 
   /* ------------------------------------------------------------------ *
@@ -152,10 +178,19 @@
         return {
           id: q.id, numero: Number(q.numero) || 0, cliente_id: q.clienteId,
           data: q.data || today(), validade: q.validade || null,
-          itens: (q.itens || []).map(function (i) {
+          // `itens` guarda SERVIÇOS, cada um com seus produtos aninhados.
+          // Este map recorta os campos gravados de propósito — se ele não
+          // conhecer `produtos`, toda gravação apaga os produtos do serviço.
+          itens: (q.itens || []).map(function (s) {
             return {
-              id: i.id, servicoId: i.servicoId || null, nome: i.nome || '', descricao: i.descricao || '',
-              unidade: i.unidade || 'un', qtd: Number(i.qtd) || 0, valor: Number(i.valor) || 0
+              id: s.id, nome: s.nome || '', valor: Number(s.valor) || 0,
+              descricao: s.descricao || '',
+              produtos: (s.produtos || []).map(function (p) {
+                return {
+                  id: p.id, nome: p.nome || '',
+                  qtd: Number(p.qtd) || 0, valor: Number(p.valor) || 0
+                };
+              })
             };
           }),
           desc_tipo: q.descTipo === '%' ? '%' : 'R$', desc_valor: Number(q.descValor) || 0,
