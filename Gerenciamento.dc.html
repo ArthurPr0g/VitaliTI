@@ -518,7 +518,8 @@
               <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16.5px">Cliente e prazos</div>
             </div>
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px" class="vt-grid2">
-              <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px">CLIENTE
+              <label style="position:relative;display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px">CLIENTE
+                <button type="button" onClick="{{ ed.novoCliente }}" style="position:absolute;right:0;top:0;background:none;border:0;color:var(--brand2);font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.2px">+ CADASTRAR PELO CNPJ</button>
                 <select value="{{ ed.clienteId }}" onChange="{{ ed.setCliente }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none;cursor:pointer">
                   <option value="">Selecione um cliente…</option>
                   <sc-for list="{{ clientOpts }}" as="c" hint-placeholder-count="6"><option value="{{ c.id }}">{{ c.nome }}</option></sc-for>
@@ -771,6 +772,18 @@
       <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px">{{ modalTitle }}</div>
       <button type="button" onClick="{{ closeModal }}" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--soft);color:var(--muted);cursor:pointer;font-size:16px">×</button>
     </div>
+    <sc-if value="{{ isCliente2 }}" hint-placeholder-val="{{ true }}">
+    <div style="background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px;margin-bottom:8px">CNPJ — PREENCHE O RESTO SOZINHO</div>
+      <div class="vt-cnpj-row" style="display:grid;grid-template-columns:1fr 132px;gap:9px">
+        <input value="{{ cnpjValor }}" onInput="{{ setCnpj }}" inputmode="numeric" placeholder="00.000.000/0000-00" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:11px;padding:12px 13px;font-size:15px;font-weight:700;outline:none;transition:border-color .2s" style-focus="border-color:var(--brand2)">
+        <button type="button" onClick="{{ buscarCnpj }}" disabled="{{ cnpjBusy }}" style="background:var(--brand);color:#fff;border:0;border-radius:11px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">{{ cnpjLabel }}</button>
+      </div>
+      <sc-if value="{{ cnpjMsg }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:9px;font-size:13px;font-weight:600;color:{{ cnpjMsgCor }}">{{ cnpjMsg }}</div>
+      </sc-if>
+    </div>
+    </sc-if>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px" class="vt-grid2">
       <sc-for list="{{ modalFields }}" as="f" hint-placeholder-count="6">
         <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px;grid-column:{{ f.span }}">{{ f.label }}
@@ -976,10 +989,13 @@ class Component extends DCLogic {
         : this.totalCliente(b.id) - this.totalCliente(a.id));
     return list;
   }
-  openClientForm(c) {
+  openClientForm(c, paraOrcamento) {
     this.setState({
+      cnpjMsg: '', cnpjBusy: false, cnpjOk: false,
       modal: {
-        tipo: 'cliente', id: c ? c.id : null, erro: '',
+        // paraOrcamento: aberto de dentro do editor. Ao salvar, o cliente
+        // recem-criado ja entra selecionado no orcamento em edicao.
+        tipo: 'cliente', id: c ? c.id : null, erro: '', paraOrcamento: !!paraOrcamento,
         f: c ? Object.assign({}, c) : { nome: '', doc: '', empresa: '', telefone: '', whatsapp: '', email: '', endereco: '', cidade: '', uf: '', cep: '', obs: '' }
       }
     });
@@ -992,6 +1008,53 @@ class Component extends DCLogic {
       }
     });
   }
+  /* Consulta o CNPJ na BrasilAPI e preenche o cadastro.
+     Preenche empresa, documento, endereço, cidade, UF, CEP e telefone.
+     NÃO toca em `nome` (pessoa de contato) nem em `obs`: a Receita não tem
+     esses dados, e sobrescrever apagaria o que o usuário digitou.
+     E-mail quase nunca vem da Receita — por isso só preenche se vier. */
+  buscarCnpj = () => {
+    const m = this.state.modal;
+    if (!m || this.state.cnpjBusy) return;
+    const d = VS.digits(m.f.doc);
+    if (d.length !== 14) {
+      this.setState({ cnpjMsg: 'Digite os 14 números do CNPJ.', cnpjOk: false });
+      return;
+    }
+    this.setState({ cnpjBusy: true, cnpjMsg: '' });
+
+    fetch('https://brasilapi.com.br/api/cnpj/v1/' + d)
+      .then(r => r.json().then(j => ({ ok: r.ok, j })))
+      .then(({ ok, j }) => {
+        if (!ok) {
+          this.setState({ cnpjBusy: false, cnpjOk: false, cnpjMsg: j && j.message ? j.message : 'CNPJ não encontrado na Receita.' });
+          return;
+        }
+        const rua = [j.descricao_tipo_de_logradouro, j.logradouro, j.numero].filter(Boolean).join(' ');
+        const end = rua + (j.bairro ? ' — ' + j.bairro : '');
+        const atual = this.state.modal.f;
+        const cheio = Object.assign({}, atual, {
+          doc: VS.maskDoc(d),
+          empresa: VS.sanitize(j.razao_social || atual.empresa || ''),
+          endereco: VS.sanitize(end) || atual.endereco || '',
+          cidade: VS.sanitize(j.municipio || '') || atual.cidade || '',
+          uf: (j.uf || atual.uf || '').toUpperCase().slice(0, 2),
+          cep: j.cep ? VS.maskCep(j.cep) : (atual.cep || ''),
+          telefone: j.ddd_telefone_1 ? VS.maskPhone(j.ddd_telefone_1) : (atual.telefone || ''),
+          email: j.email ? VS.sanitize(j.email) : (atual.email || '')
+        });
+        const fantasia = String(j.nome_fantasia || '').trim();
+        const baixada = j.descricao_situacao_cadastral && j.descricao_situacao_cadastral !== 'ATIVA';
+        this.setState({
+          cnpjBusy: false, cnpjOk: !baixada,
+          modal: Object.assign({}, this.state.modal, { f: cheio, erro: '' }),
+          cnpjMsg: (baixada ? 'Atenção: situação cadastral ' + j.descricao_situacao_cadastral + '. ' : 'Dados preenchidos. ')
+            + (fantasia ? 'Nome fantasia: ' + fantasia + '.' : 'Confira antes de salvar.')
+        });
+      })
+      .catch(() => this.setState({ cnpjBusy: false, cnpjOk: false, cnpjMsg: 'Não foi possível consultar agora. Preencha à mão.' }));
+  };
+
   saveModal = () => {
     const m = this.state.modal;
     if (!m) return;
@@ -1013,10 +1076,15 @@ class Component extends DCLogic {
         VS.logAction('cliente', m.id, 'Cadastro atualizado', this.state.session.nome);
         this.toast('Cliente atualizado');
       } else {
-        const novo = Object.assign({ id: VS.uid('cli'), createdAt: VS.today() }, clean);
+        const novo = Object.assign({ id: VS.uid(), createdAt: VS.today() }, clean);
         this.db.clients.unshift(novo);
         VS.logAction('cliente', novo.id, 'Cliente cadastrado', this.state.session.nome);
         this.toast('Cliente cadastrado');
+        // Cadastro feito de dentro do orcamento: ja deixa selecionado, senao
+        // a pessoa teria que procurar o cliente que acabou de criar.
+        if (m.paraOrcamento && this.state.draft) {
+          this.setState({ draft: Object.assign({}, this.state.draft, { clienteId: novo.id }) });
+        }
       }
     } else {
       if (!VS.sanitize(f.nome)) { this.setState({ modal: Object.assign({}, m, { erro: 'Informe o nome do serviço.' }) }); return; }
@@ -1272,6 +1340,7 @@ class Component extends DCLogic {
       setDescValor: (e) => setD({ descValor: Math.max(0, Number(e.target.value) || 0) }),
       setCondicoes: (e) => setD({ condicoes: e.target.value }),
       setObs: (e) => setD({ obs: e.target.value }),
+      novoCliente: () => this.openClientForm(null, true),
       addServico: () => setD({
         itens: d.itens.concat([{ id: VS.uid(), nome: '', valor: 0, descricao: '', produtos: [] }])
       }),
@@ -1363,12 +1432,15 @@ class Component extends DCLogic {
     /* modal */
     const m = s.modal;
     const setF = (k) => (e) => this.setState({ modal: Object.assign({}, this.state.modal, { f: Object.assign({}, this.state.modal.f, { [k]: e.target.value }) }) });
-    const cliFields = [['empresa', 'EMPRESA', 'span 2', 'Ex.: Clínica Nexum'], ['nome', 'PESSOA DE CONTATO', 'auto', 'Ex.: Natália'], ['doc', 'CPF / CNPJ', 'auto', '00.000.000/0000-00'],
+    // `doc` nao entra aqui: o CNPJ ganhou um bloco proprio no topo do modal,
+    // com botao de busca. Repetir na grade daria dois campos para o mesmo dado.
+    const cliFields = [['empresa', 'EMPRESA', 'span 2', 'Ex.: Clínica Nexum'], ['nome', 'PESSOA DE CONTATO', 'span 2', 'Ex.: Natália'],
     ['telefone', 'TELEFONE', 'auto', '(62) 0000-0000'], ['whatsapp', 'WHATSAPP', 'auto', '(62) 90000-0000'], ['email', 'E-MAIL', 'span 2', 'contato@empresa.com.br'],
     ['endereco', 'ENDEREÇO', 'span 2', 'Rua, número, bairro'], ['cidade', 'CIDADE', 'auto', 'Goiânia'], ['uf', 'UF', 'auto', 'GO'], ['cep', 'CEP', 'auto', '00000-000'], ['obs', 'OBSERVAÇÕES', 'span 2', 'Anotações internas']];
     const srvFields = [['nome', 'NOME DO SERVIÇO', 'span 2', 'Ex.: CFTV — câmera IP full HD'], ['categoria', 'CATEGORIA', 'auto', 'Segurança eletrônica'], ['unidade', 'UNIDADE', 'auto', 'un / ponto / mês'],
     ['valor', 'VALOR (R$)', 'auto', '0,00'], ['status', 'STATUS', 'auto', 'Ativo / Inativo'], ['descricao', 'DESCRIÇÃO', 'span 2', 'O que está incluso no serviço']];
     const modalFields = !m ? [] : (m.tipo === 'cliente' ? cliFields : srvFields).map(f => ({ label: f[1], span: f[2], ph: f[3], value: m.f[f[0]] == null ? '' : String(m.f[f[0]]), on: setF(f[0]) }));
+    const cnpjBusy = !!s.cnpjBusy;
 
     /* config */
     const cfg = s.cfg || db.settings;
@@ -1453,6 +1525,20 @@ class Component extends DCLogic {
 
       modalOpen: !!m, modalTitle: !m ? '' : (m.tipo === 'cliente' ? (m.id ? 'Editar cliente' : 'Novo cliente') : (m.id ? 'Editar serviço' : 'Novo serviço')),
       modalFields, modalErro: m ? m.erro : '',
+
+      // Bloco de CNPJ no topo do modal de cliente (itens 1 e 4).
+      isCliente2: !!m && m.tipo === 'cliente',
+      cnpjValor: m ? (m.f.doc || '') : '',
+      setCnpj: (e) => this.setState({
+        modal: Object.assign({}, this.state.modal, { f: Object.assign({}, this.state.modal.f, { doc: VS.maskDoc(e.target.value) }) }),
+        cnpjMsg: ''
+      }),
+      buscarCnpj: this.buscarCnpj,
+      cnpjBusy,
+      cnpjLabel: cnpjBusy ? 'Buscando…' : 'Buscar dados',
+      cnpjMsg: s.cnpjMsg || '',
+      cnpjMsgCor: s.cnpjOk ? '#059669' : '#dc2626',
+
       closeModal: () => this.setState({ modal: null }), saveModal: () => this.runBusy('modal', this.saveModal), stop: (e) => e.stopPropagation(),
 
       confirmOpen: !!s.confirm,
