@@ -93,12 +93,19 @@
     #vt-shell,#vt-pdfbar{ display:none !important; }
     #vt-pdfwrap{ position:static !important; padding:0 !important; background:#fff !important; overflow:visible !important; }
     #vt-sheet{ box-shadow:none !important; margin:0 !important; width:100% !important; min-height:0 !important; }
-    /* `portrait` explicito: so "A4" deixa a orientacao por conta do dialogo
-       de impressao, que lembra a ultima escolha do usuario e sai deitado. */
-    @page{ size:A4 portrait; margin:12mm; }
+    /* Medidas explicitas em vez da palavra-chave A4.
+       Escrito como `size:A4 portrait`, o Chrome descarta o `portrait` no
+       parse (fica so `size:a4`) e a orientacao volta a depender do dialogo de
+       impressao, que lembra a ultima escolha do usuario -- por isso saia
+       deitado. Com largura x altura explicitas, largura < altura, nao ha o
+       que reinterpretar.
+       Precisa vir depois do @page do support.js, que define margin:0.5cm. */
+    @page{ size:210mm 297mm; margin:12mm; }
 
-    /* O @page ja da a margem; o padding da folha aqui so roubaria altura. */
-    #vt-sheet{ padding:0 !important; }
+    /* O @page ja da a margem; o padding da folha aqui so roubaria altura.
+       A largura fica presa na area util do A4 retrato (210 - 2x12) para o
+       conteudo nao poder ficar mais largo que a pagina. */
+    #vt-sheet{ padding:0 !important; width:186mm !important; max-width:186mm !important; }
 
     /* Nunca quebrar uma linha de tabela no meio, e manter cada bloco inteiro
        na mesma pagina. Se transbordar, quebra entre blocos -- nao no meio de
