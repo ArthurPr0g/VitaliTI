@@ -1431,7 +1431,19 @@ class Component extends DCLogic {
 
     /* modal */
     const m = s.modal;
-    const setF = (k) => (e) => this.setState({ modal: Object.assign({}, this.state.modal, { f: Object.assign({}, this.state.modal.f, { [k]: e.target.value }) }) });
+    /* Formata enquanto digita. Sem isto, o telefone vindo do CNPJ aparece
+       como "(62) 3224-1940" e o WhatsApp digitado ao lado aparece como
+       "62992062304" — dois formatos para o mesmo tipo de dado na mesma tela.
+       A mascara ja era aplicada, mas so no momento de salvar. */
+    const MASCARA = {
+      doc: VS.maskDoc, telefone: VS.maskPhone, whatsapp: VS.maskPhone, cep: VS.maskCep,
+      uf: (v) => String(v == null ? '' : v).toUpperCase().slice(0, 2)
+    };
+    const setF = (k) => (e) => {
+      const bruto = e.target.value;
+      const val = MASCARA[k] ? MASCARA[k](bruto) : bruto;
+      this.setState({ modal: Object.assign({}, this.state.modal, { f: Object.assign({}, this.state.modal.f, { [k]: val }) }) });
+    };
     // `doc` nao entra aqui: o CNPJ ganhou um bloco proprio no topo do modal,
     // com botao de busca. Repetir na grade daria dois campos para o mesmo dado.
     const cliFields = [['empresa', 'EMPRESA', 'span 2', 'Ex.: Clínica Nexum'], ['nome', 'PESSOA DE CONTATO', 'span 2', 'Ex.: Natália'],
