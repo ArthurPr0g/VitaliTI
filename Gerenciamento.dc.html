@@ -856,7 +856,27 @@ class Component extends DCLogic {
     return this.db.quotes.filter(q => q.clienteId === id && q.status === 'Aprovado')
       .reduce((a, q) => a + VS.quoteTotals(q).total, 0);
   }
-  clientName(id) { const c = this.db.clients.filter(x => x.id === id)[0]; return c ? c.nome : '—'; }
+  /* `nome` = pessoa de contato dentro da empresa. `empresa` = nome da empresa.
+     Na interface mostramos os dois juntos; no PDF, so a empresa (o documento
+     vai para a empresa, nao para a pessoa). Cadastros antigos podem ter so um
+     dos campos preenchido, entao ambos caem para o que existir. */
+  clientLabel(c) {
+    if (!c) return '—';
+    const contato = String(c.nome || '').trim();
+    const empresa = String(c.empresa || '').trim();
+    if (contato && empresa) return contato + ' — ' + empresa;
+    return empresa || contato || '—';
+  }
+  clientCompany(c) {
+    if (!c) return '—';
+    return String(c.empresa || '').trim() || String(c.nome || '').trim() || '—';
+  }
+  clientInitials(c) {
+    const base = String((c && (c.empresa || c.nome)) || '?').trim();
+    return base.slice(0, 2).toUpperCase();
+  }
+  clientById(id) { return this.db.clients.filter(x => x.id === id)[0]; }
+  clientName(id) { return this.clientLabel(this.clientById(id)); }
   st(s) { return STATUS[s] || STATUS['Pendente']; }
 
   /* ---------- auth ---------- */
@@ -901,11 +921,13 @@ class Component extends DCLogic {
     const q = this.state.cliQ.toLowerCase().trim();
     let list = this.db.clients.filter(c => {
       const okUF = this.state.cliUF === 'Todos' || c.uf === this.state.cliUF;
-      const hay = (c.nome + ' ' + c.empresa + ' ' + c.doc + ' ' + c.cidade + ' ' + c.email).toLowerCase();
+      const hay = [c.nome, c.empresa, c.doc, c.cidade, c.email].join(' ').toLowerCase();
       return okUF && (!q || hay.indexOf(q) >= 0);
     });
     const s = this.state.cliSort;
-    list = list.slice().sort((a, b) => s === 'nome' ? a.nome.localeCompare(b.nome)
+    // Ordena pela empresa, nao pelo contato: apos a mudanca de semantica o
+    // contato fica vazio em boa parte dos cadastros e todos se amontoariam.
+    list = list.slice().sort((a, b) => s === 'nome' ? this.clientCompany(a).localeCompare(this.clientCompany(b))
       : s === 'recente' ? String(b.createdAt).localeCompare(String(a.createdAt))
         : this.totalCliente(b.id) - this.totalCliente(a.id));
     return list;
@@ -931,7 +953,9 @@ class Component extends DCLogic {
     if (!m) return;
     const f = m.f;
     if (m.tipo === 'cliente') {
-      if (!VS.sanitize(f.nome)) { this.setState({ modal: Object.assign({}, m, { erro: 'Informe o nome do cliente.' }) }); return; }
+      // Empresa e o campo obrigatorio: o orcamento e emitido para a empresa.
+      // A pessoa de contato e opcional -- nem todo cliente tem uma definida.
+      if (!VS.sanitize(f.empresa)) { this.setState({ modal: Object.assign({}, m, { erro: 'Informe a empresa.' }) }); return; }
       if (f.email && f.email.indexOf('@') < 0) { this.setState({ modal: Object.assign({}, m, { erro: 'E-mail inválido.' }) }); return; }
       const clean = {
         nome: VS.sanitize(f.nome), doc: VS.maskDoc(f.doc), empresa: VS.sanitize(f.empresa),
@@ -1099,8 +1123,8 @@ class Component extends DCLogic {
       open: () => this.splash('Abrindo orçamento nº ' + q.numero + '…', () => this.openEditor(q), 750)
     }));
     const lastClients = db.clients.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0, 5).map(c => ({
-      nome: c.nome, cidade: c.cidade, doc: c.doc, ini: (c.nome || '?').slice(0, 2).toUpperCase(), desde: VS.dateBR(c.createdAt),
-      open: () => this.splash('Abrindo ficha de ' + c.nome + '…', () => this.setState({ view: 'cliente', selClient: c.id }), 750)
+      nome: this.clientLabel(c), cidade: c.cidade, doc: c.doc, ini: this.clientInitials(c), desde: VS.dateBR(c.createdAt),
+      open: () => this.splash('Abrindo ficha de ' + this.clientCompany(c) + '…', () => this.setState({ view: 'cliente', selClient: c.id }), 750)
     }));
 
     /* clientes */
@@ -1108,11 +1132,11 @@ class Component extends DCLogic {
     const pages = Math.max(1, Math.ceil(allClients.length / PER_PAGE));
     const page = Math.min(s.cliPage, pages);
     const clientRows = allClients.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(c => ({
-      nome: c.nome, email: c.email || '—', doc: c.doc || '—', cidade: (c.cidade || '—') + (c.uf ? ' / ' + c.uf : ''),
-      ini: (c.nome || '?').slice(0, 2).toUpperCase(), total: VS.brl(this.totalCliente(c.id)),
+      nome: this.clientLabel(c), email: c.email || '—', doc: c.doc || '—', cidade: (c.cidade || '—') + (c.uf ? ' / ' + c.uf : ''),
+      ini: this.clientInitials(c), total: VS.brl(this.totalCliente(c.id)),
       open: () => this.setState({ view: 'cliente', selClient: c.id }),
       edit: (e) => { e.stopPropagation(); this.openClientForm(c); },
-      del: (e) => { e.stopPropagation(); this.askDelete('cliente', c.id, c.nome); }
+      del: (e) => { e.stopPropagation(); this.askDelete('cliente', c.id, this.clientLabel(c)); }
     }));
     const ufs = ['Todos'].concat(db.clients.map(c => c.uf).filter((x, i, a) => x && a.indexOf(x) === i).sort());
 
@@ -1124,7 +1148,12 @@ class Component extends DCLogic {
       const tot = qs.filter(q => q.status === 'Aprovado').reduce((a, q) => a + VS.quoteTotals(q).total, 0);
       const datas = qs.map(q => q.data).sort();
       det = {
-        ini: (cli.nome || '?').slice(0, 2).toUpperCase(), nome: cli.nome, empresa: cli.empresa || '—',
+        // Titulo e a empresa; subtitulo e a pessoa de contato. Se so houver
+        // contato cadastrado, ele sobe para o titulo e o subtitulo some.
+        ini: this.clientInitials(cli),
+        nome: this.clientCompany(cli),
+        empresa: (String(cli.empresa || '').trim() && String(cli.nome || '').trim())
+          ? 'Contato: ' + String(cli.nome).trim() : '—',
         campos: [
           { k: 'CPF/CNPJ', v: cli.doc || '—' }, { k: 'Telefone', v: cli.telefone || '—' }, { k: 'WhatsApp', v: cli.whatsapp || '—' },
           { k: 'E-mail', v: cli.email || '—' }, { k: 'Endereço', v: cli.endereco || '—' }, { k: 'Cidade / UF', v: (cli.cidade || '—') + (cli.uf ? ' / ' + cli.uf : '') },
@@ -1220,7 +1249,8 @@ class Component extends DCLogic {
       pdf = {
         numero: pq.numero, data: VS.dateBR(pq.data), validade: VS.dateBR(pq.validade),
         empresa: cfgNow.nome, cnpj: cfgNow.cnpj, endereco: cfgNow.endereco, telefone: cfgNow.telefone, email: cfgNow.email,
-        autor: sess ? sess.nome : 'Vitaliti', clienteNome: c.nome || '—', clienteDoc: c.doc || '—',
+        // Item 9: no documento vai so o nome da empresa, nunca o contato.
+        autor: sess ? sess.nome : 'Vitaliti', clienteNome: this.clientCompany(c), clienteDoc: c.doc || '—',
         clienteEndereco: c.endereco || '—', clienteCidade: (c.cidade || '') + (c.uf ? ' — ' + c.uf : '') + (c.cep ? ' · CEP ' + c.cep : ''),
         clienteTelefone: c.telefone || '—', clienteEmail: c.email || '—',
         itens: pq.itens.map((i, n) => ({ n: n + 1, nome: i.nome, descricao: i.descricao || '', qtd: i.qtd + ' ' + (i.unidade || ''), valor: VS.brl(i.valor), subtotal: VS.brl(i.qtd * i.valor) })),
@@ -1232,7 +1262,7 @@ class Component extends DCLogic {
     /* modal */
     const m = s.modal;
     const setF = (k) => (e) => this.setState({ modal: Object.assign({}, this.state.modal, { f: Object.assign({}, this.state.modal.f, { [k]: e.target.value }) }) });
-    const cliFields = [['nome', 'NOME / RAZÃO SOCIAL', 'span 2', 'Ex.: Passeio das Águas Shopping'], ['doc', 'CPF / CNPJ', 'auto', '00.000.000/0000-00'], ['empresa', 'EMPRESA', 'auto', 'Nome fantasia'],
+    const cliFields = [['empresa', 'EMPRESA', 'span 2', 'Ex.: Clínica Nexum'], ['nome', 'PESSOA DE CONTATO', 'auto', 'Ex.: Natália'], ['doc', 'CPF / CNPJ', 'auto', '00.000.000/0000-00'],
     ['telefone', 'TELEFONE', 'auto', '(62) 0000-0000'], ['whatsapp', 'WHATSAPP', 'auto', '(62) 90000-0000'], ['email', 'E-MAIL', 'span 2', 'contato@empresa.com.br'],
     ['endereco', 'ENDEREÇO', 'span 2', 'Rua, número, bairro'], ['cidade', 'CIDADE', 'auto', 'Goiânia'], ['uf', 'UF', 'auto', 'GO'], ['cep', 'CEP', 'auto', '00000-000'], ['obs', 'OBSERVAÇÕES', 'span 2', 'Anotações internas']];
     const srvFields = [['nome', 'NOME DO SERVIÇO', 'span 2', 'Ex.: CFTV — câmera IP full HD'], ['categoria', 'CATEGORIA', 'auto', 'Segurança eletrônica'], ['unidade', 'UNIDADE', 'auto', 'un / ponto / mês'],
