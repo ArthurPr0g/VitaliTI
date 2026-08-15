@@ -330,7 +330,7 @@
 
         <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)">
           <div class="vt-tcli" style="display:grid;grid-template-columns:2.1fr 1.3fr 1.2fr 1fr 108px;gap:12px;padding:14px 20px;background:var(--soft);border-bottom:1px solid var(--line);font-size:12px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase">
-            <div>Cliente</div><div class="vt-hidem">Documento</div><div class="vt-hidem">Cidade</div><div>Total vendido</div><div style="text-align:right">Ações</div>
+            <div>CNPJ / Empresa / Contato</div><div class="vt-hidem">Cidade</div><div class="vt-hidem">Cliente desde</div><div>Total vendido</div><div style="text-align:right">Ações</div>
           </div>
           <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
             <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">
@@ -342,12 +342,13 @@
               <button type="button" onClick="{{ c.open }}" style="display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;cursor:pointer;text-align:left;color:var(--text);min-width:0">
                 <span style="width:36px;height:36px;flex:0 0 36px;border-radius:11px;background:linear-gradient(135deg,rgba(29,78,216,.14),rgba(56,189,248,.16));color:var(--brand2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">{{ c.ini }}</span>
                 <span style="min-width:0">
-                  <span style="display:block;font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.nome }}</span>
-                  <span style="display:block;color:var(--muted);font-size:12.5px;margin-top:2px">{{ c.email }}</span>
+                  <span style="display:block;color:var(--muted);font-size:12px;font-weight:700">{{ c.doc }}</span>
+                  <span style="display:block;font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.empresa }}</span>
+                  <span style="display:block;color:var(--muted);font-size:12.5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.contato }}</span>
                 </span>
               </button>
-              <div class="vt-hidem" style="font-size:13.5px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.doc }}</div>
               <div class="vt-hidem" style="font-size:13.5px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.cidade }}</div>
+              <div class="vt-hidem" style="font-size:13.5px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.desde }}</div>
               <div style="font-size:14px;font-weight:700">{{ c.total }}</div>
               <div style="display:flex;justify-content:flex-end;gap:6px">
                 <button type="button" onClick="{{ c.edit }}" title="Editar" style="width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s" style-hover="color:var(--brand2);border-color:var(--brand2)">
@@ -518,13 +519,40 @@
               <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16.5px">Cliente e prazos</div>
             </div>
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px" class="vt-grid2">
-              <label style="position:relative;display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px">CLIENTE
-                <button type="button" onClick="{{ ed.novoCliente }}" style="position:absolute;right:0;top:0;background:none;border:0;color:var(--brand2);font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.2px">+ CADASTRAR PELO CNPJ</button>
-                <select value="{{ ed.clienteId }}" onChange="{{ ed.setCliente }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none;cursor:pointer">
-                  <option value="">Selecione um cliente…</option>
-                  <sc-for list="{{ clientOpts }}" as="c" hint-placeholder-count="6"><option value="{{ c.id }}">{{ c.nome }}</option></sc-for>
-                </select>
-              </label>
+              <div style="position:relative;display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px">CLIENTE
+
+                <sc-if value="{{ ed.temCliente }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--soft);border-radius:11px;padding:9px 11px">
+                    <div style="min-width:0;flex:1">
+                      <div style="font-size:12px;color:var(--muted);font-weight:700">{{ ed.cliDoc }}</div>
+                      <div style="font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ed.cliEmpresa }}</div>
+                      <div style="font-size:12px;color:var(--muted);font-weight:600">{{ ed.cliContato }}</div>
+                    </div>
+                    <button type="button" onClick="{{ ed.trocarCliente }}" style="background:none;border:0;color:var(--brand2);font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.2px;white-space:nowrap">TROCAR</button>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ ed.semCliente }}" hint-placeholder-val="{{ true }}">
+                  <input value="{{ ed.busca }}" onInput="{{ ed.setBusca }}" placeholder="Digite o nome da empresa ou o CNPJ" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none;transition:border-color .2s" style-focus="border-color:var(--brand2)">
+
+                  <div style="border:1px solid var(--line);background:var(--card);border-radius:11px;overflow:hidden;max-height:238px;overflow-y:auto">
+                    <sc-for list="{{ ed.resultados }}" as="r" hint-placeholder-count="4">
+                      <div onClick="{{ r.escolher }}" class="vt-row" style="padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer">
+                        <div style="font-size:11.5px;color:var(--muted);font-weight:700">{{ r.doc }}</div>
+                        <div style="font-size:13.5px;font-weight:700;color:var(--text)">{{ r.empresa }}</div>
+                        <div style="font-size:12px;color:var(--muted);font-weight:600">{{ r.contato }}</div>
+                      </div>
+                    </sc-for>
+
+                    <sc-if value="{{ ed.semResultado }}" hint-placeholder-val="{{ false }}">
+                      <div style="padding:14px 12px;text-align:center">
+                        <div style="color:var(--muted);font-size:13px;font-weight:600;margin-bottom:9px">Nenhum cliente encontrado.</div>
+                        <button type="button" onClick="{{ ed.novoCliente }}" style="background:var(--brand);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer">+ Cadastrar este cliente</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
               <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px">DATA
                 <input type="date" value="{{ ed.data }}" onChange="{{ ed.setData }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none">
               </label>
@@ -542,14 +570,24 @@
             <sc-for list="{{ ed.servicos }}" as="s" hint-placeholder-count="2">
               <div style="border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;background:var(--soft)">
 
-                <div class="vt-svc-head" style="display:grid;grid-template-columns:1fr 150px 36px;gap:10px;align-items:center">
-                  <input value="{{ s.nome }}" onInput="{{ s.setNome }}" placeholder="Nome do serviço (ex.: CFTV)" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14.5px;font-weight:700;outline:none;width:100%">
-                  <input type="number" min="0" step="0.01" inputmode="decimal" value="{{ s.valor }}" onInput="{{ s.setValor }}" placeholder="Mão de obra" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14px;font-weight:700;outline:none;width:100%">
+                <div class="vt-svc-head" style="display:grid;grid-template-columns:1fr 150px 36px;gap:10px;align-items:end">
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.4px">NOME DO SERVIÇO
+                    <input value="{{ s.nome }}" onInput="{{ s.setNome }}" placeholder="Ex.: CFTV" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14.5px;font-weight:700;outline:none;width:100%">
+                  </label>
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.4px">MÃO DE OBRA (R$)
+                    <input type="number" min="0" step="0.01" inputmode="decimal" value="{{ s.valor }}" onInput="{{ s.setValor }}" placeholder="0,00" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14px;font-weight:700;outline:none;width:100%">
+                  </label>
                   <button type="button" onClick="{{ s.remove }}" title="Remover serviço" style="width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;font-size:17px;line-height:1;transition:color .2s" style-hover="color:#dc2626">×</button>
                 </div>
 
                 <div style="margin-top:12px">
                   <div style="font-size:11.5px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:7px">Produtos deste serviço</div>
+
+                  <sc-if value="{{ s.temProdutos }}" hint-placeholder-val="{{ true }}">
+                    <div class="vt-prod-row vt-hidem" style="display:grid;grid-template-columns:1fr 74px 110px 96px 32px;gap:8px;margin-bottom:5px;font-size:10.5px;font-weight:800;letter-spacing:.4px;color:var(--muted)">
+                      <div>PRODUTO</div><div>QTD</div><div>VALOR UN. (R$)</div><div style="text-align:right">TOTAL</div><div></div>
+                    </div>
+                  </sc-if>
 
                   <sc-for list="{{ s.produtos }}" as="p" hint-placeholder-count="2">
                     <div class="vt-prod-row" style="display:grid;grid-template-columns:1fr 74px 110px 96px 32px;gap:8px;align-items:center;margin-bottom:7px">
@@ -568,7 +606,9 @@
                   <button type="button" onClick="{{ s.addProduto }}" style="border:1px dashed var(--line);background:none;color:var(--brand2);border-radius:9px;padding:9px 14px;font-size:13.5px;font-weight:700;cursor:pointer">+ Adicionar produto</button>
                 </div>
 
-                <textarea rows="2" value="{{ s.descricao }}" onInput="{{ s.setDescricao }}" placeholder="Descrição / observações deste serviço" style="width:100%;margin-top:12px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;resize:vertical;line-height:1.55"></textarea>
+                <label style="display:flex;flex-direction:column;gap:5px;margin-top:12px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.4px">DESCRIÇÃO DESTE SERVIÇO
+                  <textarea rows="2" value="{{ s.descricao }}" onInput="{{ s.setDescricao }}" placeholder="O que está incluso, prazos, condições específicas…" style="width:100%;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;resize:vertical;line-height:1.55"></textarea>
+                </label>
 
                 <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:flex-end;margin-top:10px;font-size:13px">
                   <span style="color:var(--muted);font-weight:600">Mão de obra <strong style="color:var(--text)">{{ s.valorFmt }}</strong></span>
@@ -591,13 +631,21 @@
               <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16.5px">Desconto, condições e observações</div>
             </div>
             <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;margin-bottom:14px">
-              <select value="{{ ed.descTipo }}" onChange="{{ ed.setDescTipo }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none;cursor:pointer">
-                <option value="R$">R$</option><option value="%">%</option>
-              </select>
-              <input type="number" min="0" step="0.01" value="{{ ed.descValor }}" onInput="{{ ed.setDescValor }}" placeholder="Desconto" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:700;outline:none">
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.4px">TIPO
+                <select value="{{ ed.descTipo }}" onChange="{{ ed.setDescTipo }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none;cursor:pointer">
+                  <option value="R$">R$</option><option value="%">%</option>
+                </select>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.4px">DESCONTO
+                <input type="number" min="0" step="0.01" inputmode="decimal" value="{{ ed.descValor }}" onInput="{{ ed.setDescValor }}" placeholder="0,00" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:700;outline:none">
+              </label>
             </div>
-            <textarea rows="2" placeholder="Condições de pagamento" value="{{ ed.condicoes }}" onInput="{{ ed.setCondicoes }}" style="width:100%;border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;outline:none;resize:vertical;margin-bottom:12px;line-height:1.55"></textarea>
-            <textarea rows="3" placeholder="Observações" value="{{ ed.obs }}" onInput="{{ ed.setObs }}" style="width:100%;border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;outline:none;resize:vertical;line-height:1.55"></textarea>
+            <label style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.4px">CONDIÇÕES DE PAGAMENTO
+              <textarea rows="2" placeholder="Ex.: 50% na aprovação e 50% na entrega. Pix, boleto ou cartão." value="{{ ed.condicoes }}" onInput="{{ ed.setCondicoes }}" style="width:100%;border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;outline:none;resize:vertical;line-height:1.55"></textarea>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.4px">OBSERVAÇÕES DO ORÇAMENTO
+              <textarea rows="3" placeholder="Aparece na proposta enviada ao cliente" value="{{ ed.obs }}" onInput="{{ ed.setObs }}" style="width:100%;border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;outline:none;resize:vertical;line-height:1.55"></textarea>
+            </label>
           </div>
         </div>
 
@@ -989,14 +1037,14 @@ class Component extends DCLogic {
         : this.totalCliente(b.id) - this.totalCliente(a.id));
     return list;
   }
-  openClientForm(c, paraOrcamento) {
+  openClientForm(c, paraOrcamento, docInicial) {
     this.setState({
       cnpjMsg: '', cnpjBusy: false, cnpjOk: false,
       modal: {
         // paraOrcamento: aberto de dentro do editor. Ao salvar, o cliente
         // recem-criado ja entra selecionado no orcamento em edicao.
         tipo: 'cliente', id: c ? c.id : null, erro: '', paraOrcamento: !!paraOrcamento,
-        f: c ? Object.assign({}, c) : { nome: '', doc: '', empresa: '', telefone: '', whatsapp: '', email: '', endereco: '', cidade: '', uf: '', cep: '', obs: '' }
+        f: c ? Object.assign({}, c) : { nome: '', doc: docInicial || '', empresa: '', telefone: '', whatsapp: '', email: '', endereco: '', cidade: '', uf: '', cep: '', obs: '' }
       }
     });
   }
@@ -1247,7 +1295,12 @@ class Component extends DCLogic {
     const pages = Math.max(1, Math.ceil(allClients.length / PER_PAGE));
     const page = Math.min(s.cliPage, pages);
     const clientRows = allClients.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(c => ({
-      nome: this.clientLabel(c), email: c.email || '—', doc: c.doc || '—', cidade: (c.cidade || '—') + (c.uf ? ' / ' + c.uf : ''),
+      // Ordem pedida: CNPJ, empresa, pessoa de contato.
+      doc: c.doc || 'CNPJ não informado',
+      empresa: this.clientCompany(c),
+      contato: String(c.nome || '').trim() || 'Sem contato cadastrado',
+      email: c.email || '—', cidade: (c.cidade || '—') + (c.uf ? ' / ' + c.uf : ''),
+      desde: VS.dateBR(c.createdAt),
       ini: this.clientInitials(c), total: VS.brl(this.totalCliente(c.id)),
       open: () => this.setState({ view: 'cliente', selClient: c.id }),
       edit: (e) => { e.stopPropagation(); this.openClientForm(c); },
@@ -1325,7 +1378,41 @@ class Component extends DCLogic {
     const d = s.draft || this.newDraft();
     const dt = VS.quoteTotals(d);
     const setD = (patch) => this.setState({ draft: Object.assign({}, this.state.draft || d, patch) });
+
+    /* Busca de cliente do orcamento: casa por empresa, pessoa de contato,
+       cidade ou CNPJ. O CNPJ e comparado so por digitos, senao quem digita
+       "29741792" nao acha "29.741.792/0001-37". */
+    const buscaCli = String(s.cliBusca || '').trim();
+    const digitosBusca = VS.digits(buscaCli);
+    const clienteSel = d.clienteId ? this.clientById(d.clienteId) : null;
+    const achados = (() => {
+      const q = buscaCli.toLowerCase();
+      const lista = !q ? db.clients.slice() : db.clients.filter(c => {
+        const texto = [c.empresa, c.nome, c.cidade].join(' ').toLowerCase();
+        const porDoc = digitosBusca.length >= 3 && VS.digits(c.doc).indexOf(digitosBusca) >= 0;
+        return texto.indexOf(q) >= 0 || porDoc;
+      });
+      return lista.sort((a, b) => this.clientCompany(a).localeCompare(this.clientCompany(b))).slice(0, 8);
+    })();
+
     const ed = {
+      temCliente: !!clienteSel,
+      semCliente: !clienteSel,
+      cliDoc: clienteSel ? (clienteSel.doc || 'CNPJ não informado') : '',
+      cliEmpresa: clienteSel ? this.clientCompany(clienteSel) : '',
+      cliContato: clienteSel
+        ? (String(clienteSel.nome || '').trim() ? 'Contato: ' + clienteSel.nome : 'Sem contato cadastrado')
+        : '',
+      trocarCliente: () => { setD({ clienteId: '' }); this.setState({ cliBusca: '' }); },
+      busca: s.cliBusca || '',
+      setBusca: (e) => this.setState({ cliBusca: e.target.value }),
+      resultados: achados.map(c => ({
+        doc: c.doc || 'CNPJ não informado',
+        empresa: this.clientCompany(c),
+        contato: String(c.nome || '').trim() || '—',
+        escolher: () => { setD({ clienteId: c.id }); this.setState({ cliBusca: '' }); }
+      })),
+      semResultado: achados.length === 0,
       clienteId: d.clienteId, data: d.data, validade: d.validade, status: d.status,
       descTipo: d.descTipo, descValor: d.descValor, condicoes: d.condicoes, obs: d.obs, addId: s.addId || '',
       clienteNome: d.clienteId ? this.clientName(d.clienteId) : 'Não selecionado',
@@ -1340,7 +1427,9 @@ class Component extends DCLogic {
       setDescValor: (e) => setD({ descValor: Math.max(0, Number(e.target.value) || 0) }),
       setCondicoes: (e) => setD({ condicoes: e.target.value }),
       setObs: (e) => setD({ obs: e.target.value }),
-      novoCliente: () => this.openClientForm(null, true),
+      // Se a busca ja era um CNPJ, o cadastro abre com ele preenchido --
+      // redigitar o que acabou de ser digitado seria trabalho repetido.
+      novoCliente: () => this.openClientForm(null, true, digitosBusca.length === 14 ? VS.maskDoc(digitosBusca) : ''),
       addServico: () => setD({
         itens: d.itens.concat([{ id: VS.uid(), nome: '', valor: 0, descricao: '', produtos: [] }])
       }),
@@ -1364,6 +1453,7 @@ class Component extends DCLogic {
           totalProdutos: VS.brl(totalProdutos),
           total: VS.brl((Number(sv.valor) || 0) + totalProdutos),
           semProdutos: produtos.length === 0,
+          temProdutos: produtos.length > 0,
 
           setNome: (e) => trocaServico({ nome: e.target.value }),
           setValor: (e) => trocaServico({ valor: Math.max(0, Number(e.target.value) || 0) }),
