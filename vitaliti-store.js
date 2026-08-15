@@ -93,22 +93,50 @@
    * e sem `produtos`. O fallback abaixo evita que um registro não convertido
    * apareça zerado na tela.
    */
-  function quoteTotals(q) {
-    var lista = q.itens || [];
-    var servicos = 0, produtos = 0;
+  /* Serviços e produtos são listas independentes do orçamento — produto não
+   * pertence a serviço nenhum.
+   *
+   * Formato atual de `itens`:
+   *   { servicos: [ {id,nome,valor,descricao} ],
+   *     produtos: [ {id,nome,qtd,valor} ] }
+   *
+   * Já existiram outros dois formatos em produção, e esta função entende os
+   * três para que nenhum orçamento antigo apareça zerado:
+   *   1. lista plana  [ {nome,qtd,valor} ]                 (original)
+   *   2. lista de serviços com produtos aninhados          (intermediário)
+   *   3. objeto {servicos, produtos}                       (atual)
+   */
+  function quoteParts(q) {
+    var it = q && q.itens;
+    if (!it) return { servicos: [], produtos: [] };
 
-    lista.forEach(function (s) {
-      if (s && s.produtos) {
-        servicos += Number(s.valor) || 0;
-        (s.produtos || []).forEach(function (p) {
-          produtos += (Number(p.qtd) || 0) * (Number(p.valor) || 0);
+    if (!Array.isArray(it)) {
+      return { servicos: it.servicos || [], produtos: it.produtos || [] };
+    }
+
+    var servicos = [], produtos = [];
+    it.forEach(function (s) {
+      if (!s) return;
+      if (s.produtos) {                       // formato 2
+        servicos.push({ id: s.id, nome: s.nome, valor: Number(s.valor) || 0, descricao: s.descricao || '' });
+        produtos = produtos.concat(s.produtos);
+      } else if (s.qtd !== undefined) {       // formato 1
+        servicos.push({
+          id: s.id, nome: s.nome,
+          valor: (Number(s.qtd) || 0) * (Number(s.valor) || 0),
+          descricao: s.descricao || ''
         });
-      } else if (s) {
-        // formato antigo
-        servicos += (Number(s.qtd) || 0) * (Number(s.valor) || 0);
+      } else {
+        servicos.push(s);
       }
     });
+    return { servicos: servicos, produtos: produtos };
+  }
 
+  function quoteTotals(q) {
+    var p = quoteParts(q);
+    var servicos = p.servicos.reduce(function (a, s) { return a + (Number(s.valor) || 0); }, 0);
+    var produtos = p.produtos.reduce(function (a, x) { return a + (Number(x.qtd) || 0) * (Number(x.valor) || 0); }, 0);
     var sub = servicos + produtos;
     var desc = q.descTipo === '%' ? sub * (Number(q.descValor) || 0) / 100 : (Number(q.descValor) || 0);
     if (desc > sub) desc = sub;
@@ -178,21 +206,26 @@
         return {
           id: q.id, numero: Number(q.numero) || 0, cliente_id: q.clienteId,
           data: q.data || today(), validade: q.validade || null,
-          // `itens` guarda SERVIÇOS, cada um com seus produtos aninhados.
-          // Este map recorta os campos gravados de propósito — se ele não
-          // conhecer `produtos`, toda gravação apaga os produtos do serviço.
-          itens: (q.itens || []).map(function (s) {
+          // `itens` guarda duas listas independentes. Passa por quoteParts
+          // para que um orçamento em formato antigo seja normalizado na
+          // primeira gravação, em vez de ficar meio convertido.
+          itens: (function () {
+            var p = quoteParts(q);
             return {
-              id: s.id, nome: s.nome || '', valor: Number(s.valor) || 0,
-              descricao: s.descricao || '',
-              produtos: (s.produtos || []).map(function (p) {
+              servicos: p.servicos.map(function (s) {
                 return {
-                  id: p.id, nome: p.nome || '',
-                  qtd: Number(p.qtd) || 0, valor: Number(p.valor) || 0
+                  id: s.id, nome: s.nome || '',
+                  valor: Number(s.valor) || 0, descricao: s.descricao || ''
+                };
+              }),
+              produtos: p.produtos.map(function (x) {
+                return {
+                  id: x.id, nome: x.nome || '',
+                  qtd: Number(x.qtd) || 0, valor: Number(x.valor) || 0
                 };
               })
             };
-          }),
+          })(),
           desc_tipo: q.descTipo === '%' ? '%' : 'R$', desc_valor: Number(q.descValor) || 0,
           condicoes: q.condicoes || '', obs: q.obs || '', status: q.status || 'Em andamento',
           created_at: q.createdAt || today()
@@ -570,7 +603,7 @@
     uid: uid, today: today, addDays: addDays,
     brl: brl, dateBR: dateBR, monthLabel: monthLabel,
     maskDoc: maskDoc, maskPhone: maskPhone, maskCep: maskCep,
-    digits: digits, sanitize: sanitize, quoteTotals: quoteTotals, logAction: logAction,
+    digits: digits, sanitize: sanitize, quoteTotals: quoteTotals, quoteParts: quoteParts, logAction: logAction,
     session: session, login: login, loginGoogle: loginGoogle, recoverPassword: recoverPassword,
     logout: logout, can: can,
     onError: function (cb) { errorHandlers.push(cb); },
