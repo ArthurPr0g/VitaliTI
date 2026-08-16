@@ -1973,17 +1973,19 @@ class Component extends DCLogic {
          navegador, orientacao, cabecalho com URL e numero de paginas sao
          decididos pelo dialogo, nao pela pagina -- e no iOS nem o @page e
          respeitado. Aqui o PDF e montado por nos. */
+      /* Chamada direta, sem await antes: navigator.share() so funciona
+         dentro do gesto do usuario. Colocar setState ou qualquer promessa
+         antes faria o iOS recusar a folha de compartilhamento. */
       printPdf: () => {
         if (!window.VitalitiPDF) { this.toast('Gerador de PDF não carregou. Recarregue a página.', 'erro'); return; }
-        this.setState({ busyKey: 'pdfgen' });
-        window.VitalitiPDF.abrir(pdf)
-          .then(() => this.setState({ busyKey: null }))
-          .catch((e) => {
-            this.setState({ busyKey: null });
-            this.toast('Não foi possível gerar o PDF: ' + (e && e.message ? e.message : e), 'erro');
-          });
+        try {
+          const p = window.VitalitiPDF.abrir(pdf);
+          if (p && p.catch) p.catch((e) => this.toast('Não foi possível gerar o PDF: ' + (e && e.message ? e.message : e), 'erro'));
+        } catch (e) {
+          this.toast('Não foi possível gerar o PDF: ' + (e && e.message ? e.message : e), 'erro');
+        }
       },
-      pdfLabel: s.busyKey === 'pdfgen' ? 'Gerando…' : 'Baixar PDF',
+      pdfLabel: 'Baixar / Compartilhar PDF',
       closePdf: () => this.setState({ pdfId: null }),
 
       modalOpen: !!m, modalTitle: !m ? '' : (m.tipo === 'cliente' ? (m.id ? 'Editar cliente' : 'Novo cliente') : (m.id ? 'Editar serviço' : 'Novo serviço')),

@@ -281,17 +281,45 @@
     return base.replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim() + '.pdf';
   }
 
+  /* A logo é carregada assim que o script roda, e não no clique.
+     navigator.share() exige ser chamado dentro do gesto do usuário; se
+     esperássemos a imagem depois do clique, o iOS recusaria por perda do
+     gesto e o compartilhamento não abriria. */
+  var logoPronta = null;
+  carregarLogo('assets/logo-vitaliti-clean.png').then(function (img) { logoPronta = img; });
+
   w.VitalitiPDF = {
-    /* Abre o PDF numa aba nova. No celular isso cai no visualizador do
-       sistema, de onde o compartilhamento (WhatsApp, e-mail) já funciona. */
     abrir: function (p) {
-      return carregarLogo('assets/logo-vitaliti-clean.png').then(function (logo) {
-        var doc = gerar(p, logo);
-        doc.save(nomeArquivo(p));
-        return doc.getNumberOfPages();
-      });
+      var doc = gerar(p, logoPronta);
+      var nome = nomeArquivo(p);
+      var blob = doc.output('blob');
+
+      /* Compartilha o ARQUIVO, não um link.
+         doc.save() cria uma URL blob: e dispara download; no celular a folha
+         de compartilhamento capturava essa URL e mandava junto com a
+         mensagem no WhatsApp. Aqui o PDF vai como anexo.
+         Nada de `text` nem `url` no share: qualquer um dos dois vira texto
+         na mensagem, que é exatamente o que se quer evitar. */
+      try {
+        if (w.navigator && navigator.canShare) {
+          var arq = new File([blob], nome, { type: 'application/pdf' });
+          if (navigator.canShare({ files: [arq] })) {
+            return navigator.share({ files: [arq] })
+              .then(function () { return doc.getNumberOfPages(); })
+              .catch(function (e) {
+                // Cancelar o compartilhamento não é erro.
+                if (e && e.name === 'AbortError') return doc.getNumberOfPages();
+                doc.save(nome);
+                return doc.getNumberOfPages();
+              });
+          }
+        }
+      } catch (e) { /* cai no download abaixo */ }
+
+      doc.save(nome);   // desktop e navegadores sem Web Share
+      return Promise.resolve(doc.getNumberOfPages());
     },
-    gerar: function (p, logo) { return gerar(p, logo); },
+    gerar: function (p, logo) { return gerar(p, logo === undefined ? logoPronta : logo); },
     nomeArquivo: nomeArquivo
   };
 })(window);
