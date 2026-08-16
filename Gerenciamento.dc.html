@@ -21,6 +21,8 @@
 <script src="./vitaliti-config.js"></script>
 <script src="./vendor/supabase-js.min.js"></script>
 <script src="./vitaliti-store.js"></script>
+<script src="./vendor/jspdf.umd.min.js"></script>
+<script src="./vitaliti-pdf.js"></script>
 <style>
   *{ box-sizing:border-box; }
   body{ margin:0; font-family:'Manrope',sans-serif; -webkit-font-smoothing:antialiased; background:#f5f7fb; }
@@ -936,7 +938,7 @@
   <div id="vt-pdfbar" style="position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 24px;background:#0b1729;color:#fff">
     <div style="display:flex;align-items:center;gap:12px"><img src="assets/logo-vitaliti-white-clean.png" alt="" style="height:22px;width:auto;display:block"><span style="font-weight:700;font-size:14.5px">Proposta nº {{ pdf.numero }} — {{ pdf.clienteNome }}</span></div>
     <div style="display:flex;gap:9px">
-      <button type="button" onClick="{{ printPdf }}" style="background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;border:0;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer">Imprimir / Salvar PDF</button>
+      <button type="button" onClick="{{ printPdf }}" style="background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;border:0;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer">{{ pdfLabel }}</button>
       <button type="button" onClick="{{ closePdf }}" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer">Fechar</button>
     </div>
   </div>
@@ -1948,7 +1950,23 @@ class Component extends DCLogic {
         .sort((a, b) => a.nome.localeCompare(b.nome)),
       serviceOpts: db.services.map(x => ({ id: x.id, label: x.nome + ' — ' + VS.brl(x.valor) })),
 
-      pdf, printPdf: () => window.print(), closePdf: () => this.setState({ pdfId: null }),
+      pdf,
+      /* Gera o arquivo em vez de chamar window.print(). Com a impressao do
+         navegador, orientacao, cabecalho com URL e numero de paginas sao
+         decididos pelo dialogo, nao pela pagina -- e no iOS nem o @page e
+         respeitado. Aqui o PDF e montado por nos. */
+      printPdf: () => {
+        if (!window.VitalitiPDF) { this.toast('Gerador de PDF não carregou. Recarregue a página.', 'erro'); return; }
+        this.setState({ busyKey: 'pdfgen' });
+        window.VitalitiPDF.abrir(pdf)
+          .then(() => this.setState({ busyKey: null }))
+          .catch((e) => {
+            this.setState({ busyKey: null });
+            this.toast('Não foi possível gerar o PDF: ' + (e && e.message ? e.message : e), 'erro');
+          });
+      },
+      pdfLabel: s.busyKey === 'pdfgen' ? 'Gerando…' : 'Baixar PDF',
+      closePdf: () => this.setState({ pdfId: null }),
 
       modalOpen: !!m, modalTitle: !m ? '' : (m.tipo === 'cliente' ? (m.id ? 'Editar cliente' : 'Novo cliente') : (m.id ? 'Editar serviço' : 'Novo serviço')),
       modalFields, modalErro: m ? m.erro : '',
