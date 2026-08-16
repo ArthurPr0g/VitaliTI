@@ -72,13 +72,95 @@
     .vt-tcli{ grid-template-columns:2.1fr 1fr 108px !important; }
     .vt-torc{ grid-template-columns:90px 2fr 1.1fr 150px !important; }
   }
+  /* A barra inferior so existe no mobile; no desktop quem navega e o #vt-side. */
+  #vt-botnav{ display:none; }
+
   @media (max-width:900px){
     #vt-side{ display:none !important; }
+
+    #vt-botnav{
+      display:flex; position:fixed; left:0; right:0; bottom:0; z-index:60;
+      background:var(--card); border-top:1px solid var(--line);
+      /* padding-bottom acomoda a barra de gestos do iPhone, senao o ultimo
+         item fica embaixo dela e nao da para tocar. */
+      padding:0 4px calc(6px + env(safe-area-inset-bottom, 0px));
+      box-shadow:0 -6px 22px -14px rgba(8,17,33,.5);
+    }
+    /* Espaco para o conteudo nao terminar embaixo da barra. */
+    #vt-main{ padding-bottom:74px; }
+
+    /* O cabecalho tinha titulo + pilula Loja/Gerenciamento + tema + avatar +
+       sair na mesma linha. No celular o titulo era espremido ate sumir.
+       Agora ele fica sozinho na primeira linha e os controles na segunda. */
+    #vt-main > header{
+      flex-wrap:wrap; gap:10px 12px; padding:12px 16px !important; align-items:flex-start;
+    }
+    /* !important porque o elemento tem style="flex:1" inline, que ganha da
+       folha de estilo. Sem isso o titulo continua espremido entre os
+       controles e sai truncado ("Dashbo..."). */
+    #vt-main > header > div:first-child{ flex:0 0 100% !important; }
+    #vt-main > header > div:first-child > div:first-child{ font-size:17px !important; }
+
+    /* "Gerenciamento" na pilula e redundante: a barra de baixo ja diz onde
+       voce esta. Fica so o atalho para a loja. */
+    .vt-pill-atual{ display:none !important; }
+
     .vt-hidem{ display:none !important; }
     .vt-grid4{ grid-template-columns:repeat(2,1fr) !important; }
     .vt-grid2{ grid-template-columns:1fr !important; }
     .vt-login{ grid-template-columns:1fr !important; }
     .vt-loginart{ display:none !important; }
+
+    /* Cards e titulos foram dimensionados para desktop: 22px de padding e
+       16.5px de titulo comem a largura util do celular e afastam o numero
+       do seu rotulo. */
+    .vt-kpi{ padding:15px !important; }
+    .vt-kpi-rot{ font-size:10.5px !important; letter-spacing:.3px !important; }
+    .vt-kpi-num{ font-size:26px !important; }
+    .vt-card{ padding:16px !important; }
+    .vt-card-tit{ font-size:15px !important; }
+    .vt-card-sub{ font-size:11.5px !important; }
+
+    /* 8 colunas em 190px de altura viram barras finissimas no celular. */
+    .vt-chart{ height:150px !important; gap:6px !important; }
+
+    /* Conteudo principal com respiro menor nas laterais. */
+    #vt-main main{ padding:16px !important; }
+
+    /* Tabelas viram cartoes empilhados.
+       As listas de clientes e orcamentos sao grades de 4-6 colunas. Em 430px
+       nao ha largura para isso: as colunas se desalinham do cabecalho e a
+       linha transborda para o lado. Aqui cada registro vira um bloco, com os
+       campos um sob o outro. O cabecalho da tabela perde a funcao e sai. */
+    /* Duas classes de propósito: o cabeçalho também é .vt-torc/.vt-tcli, e a
+       regra de display:block abaixo tem !important. Com specificity igual,
+       venceria a que vem depois. */
+    .vt-torc.vt-thead, .vt-tcli.vt-thead{ display:none !important; }
+
+    .vt-tcli, .vt-torc{
+      display:block !important;
+      padding:13px 15px !important;
+    }
+    .vt-tcli > *, .vt-torc > *{
+      width:100% !important;
+      text-align:left !important;
+    }
+    /* Rotulo antes do valor, ja que o cabecalho da coluna sumiu. */
+    .vt-cell[data-rot]::before{
+      content:attr(data-rot);
+      display:block;
+      font-size:10px; font-weight:800; letter-spacing:.4px;
+      color:var(--muted); text-transform:uppercase;
+      margin-bottom:1px;
+    }
+    .vt-cell{ margin-top:9px; }
+    /* Acoes voltam a ficar lado a lado, encostadas a direita. */
+    .vt-acoes{
+      display:flex !important; justify-content:flex-end !important;
+      gap:8px; margin-top:11px;
+      padding-top:11px; border-top:1px solid var(--line);
+    }
+    .vt-acoes > *{ width:auto !important; }
   }
   /* Editor de orcamento em tela estreita: os campos numericos descem para
      uma segunda linha em vez de espremer tudo lado a lado. */
@@ -263,6 +345,19 @@
     </div>
   </aside>
 
+  <!-- Navegacao inferior do mobile. A barra lateral e escondida abaixo de
+       900px e ate agora nao havia substituto: nao dava para sair do
+       Dashboard. Fica fixa embaixo, ao alcance do polegar. -->
+  <nav id="vt-botnav" aria-label="Navegação principal">
+    <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+      <button type="button" onClick="{{ n.on }}" aria-label="{{ n.label }}" style="background:none;border:0;cursor:pointer;color:{{ n.botColor }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex:1;padding:7px 2px 0;font-family:inherit">
+        <span style="width:21px;height:21px;display:block">{{ n.icon }}</span>
+        <span style="font-size:10.5px;font-weight:700;letter-spacing:.1px">{{ n.labelCurto }}</span>
+        <span style="display:block;width:20px;height:3px;border-radius:3px;background:{{ n.botBar }}"></span>
+      </button>
+    </sc-for>
+  </nav>
+
   <div id="vt-main" style="flex:1;min-width:0;min-height:100vh;display:flex;flex-direction:column">
     <header style="position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:14px 26px;display:flex;align-items:center;gap:18px">
       <div style="flex:1;min-width:0">
@@ -272,7 +367,7 @@
 
       <div style="display:flex;align-items:center;gap:5px;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px">
         <button type="button" onClick="{{ goLoja }}" style="display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;border:0;background:none;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;transition:background .25s,color .25s" style-hover="color:var(--text);background:var(--card)">Loja</button>
-        <span style="display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#1d4ed8,#2f6bff);box-shadow:0 8px 18px -10px rgba(29,78,216,.9)">Gerenciamento</span>
+        <span class="vt-pill-atual" style="display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#1d4ed8,#2f6bff);box-shadow:0 8px 18px -10px rgba(29,78,216,.9)">Gerenciamento</span>
       </div>
 
       <button type="button" onClick="{{ toggleTheme }}" aria-label="Alternar tema" style="width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s" style-hover="border-color:var(--brand2)">
@@ -297,24 +392,30 @@
       <div style="display:flex;flex-direction:column;gap:20px;animation:vtUp .4s cubic-bezier(.16,1,.3,1) both">
         <div class="vt-grid4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
           <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
-            <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                <span style="color:var(--muted);font-size:12.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase">{{ k.label }}</span>
-                <span style="width:32px;height:32px;border-radius:10px;background:{{ k.tint }};color:{{ k.color }};display:flex;align-items:center;justify-content:center"><span style="width:16px;height:16px;display:block">{{ k.icon }}</span></span>
+            <div class="vt-kpi" style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px">
+                <span class="vt-kpi-rot" style="min-width:0;color:var(--muted);font-size:12.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;line-height:1.3">{{ k.label }}</span>
+                <span style="flex:0 0 32px;width:32px;height:32px;border-radius:10px;background:{{ k.tint }};color:{{ k.color }};display:flex;align-items:center;justify-content:center"><span style="width:16px;height:16px;display:block">{{ k.icon }}</span></span>
               </div>
-              <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:27px;letter-spacing:-.8px">{{ k.value }}</div>
-              <div style="color:var(--muted);font-size:12.5px;margin-top:5px">{{ k.hint }}</div>
+              <div class="vt-kpi-num" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:27px;letter-spacing:-.8px">{{ k.value }}</div>
+              <div class="vt-card-sub" style="color:var(--muted);font-size:12.5px;margin-top:5px;line-height:1.4">{{ k.hint }}</div>
             </div>
           </sc-for>
         </div>
 
         <div class="vt-grid2" style="display:grid;grid-template-columns:1.35fr .65fr;gap:16px">
-          <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)">
-            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px">
-              <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16.5px">Evolução mensal — aprovados</div>
-              <div style="color:var(--muted);font-size:12.5px">últimos 8 meses</div>
+          <div class="vt-card" style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:18px">
+              <div class="vt-card-tit" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16.5px">Evolução mensal — aprovados</div>
+              <div class="vt-card-sub" style="flex:0 0 auto;color:var(--muted);font-size:12.5px;white-space:nowrap">últimos 8 meses</div>
             </div>
-            <div style="display:flex;align-items:flex-end;gap:12px;height:190px">
+            <sc-if value="{{ chartVazio }}" hint-placeholder-val="{{ false }}">
+              <div style="border:1px dashed var(--line);border-radius:14px;padding:30px 20px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.6">
+                Nenhum orçamento aprovado ainda.<br>O gráfico aparece quando o primeiro for aprovado.
+              </div>
+            </sc-if>
+            <sc-if value="{{ chartTem }}" hint-placeholder-val="{{ true }}">
+            <div class="vt-chart" style="display:flex;align-items:flex-end;gap:12px;height:190px">
               <sc-for list="{{ chart }}" as="c" hint-placeholder-count="8">
                 <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:9px;height:100%;justify-content:flex-end">
                   <div style="font-size:11.5px;font-weight:700;color:var(--muted)">{{ c.short }}</div>
@@ -323,6 +424,7 @@
                 </div>
               </sc-for>
             </div>
+            </sc-if>
           </div>
 
           <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)">
@@ -391,7 +493,7 @@
         </div>
 
         <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)">
-          <div class="vt-tcli" style="display:grid;grid-template-columns:2.1fr 1.3fr 1.2fr 1fr 108px;gap:12px;padding:14px 20px;background:var(--soft);border-bottom:1px solid var(--line);font-size:12px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase">
+          <div class="vt-tcli vt-thead" style="display:grid;grid-template-columns:2.1fr 1.3fr 1.2fr 1fr 108px;gap:12px;padding:14px 20px;background:var(--soft);border-bottom:1px solid var(--line);font-size:12px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase">
             <div>CNPJ / Empresa / Contato</div><div class="vt-hidem">Cidade</div><div class="vt-hidem">Cliente desde</div><div>Total vendido</div><div style="text-align:right">Ações</div>
           </div>
           <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
@@ -411,8 +513,8 @@
               </button>
               <div class="vt-hidem" style="font-size:13.5px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.cidade }}</div>
               <div class="vt-hidem" style="font-size:13.5px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.desde }}</div>
-              <div style="font-size:14px;font-weight:700">{{ c.total }}</div>
-              <div style="display:flex;justify-content:flex-end;gap:6px">
+              <div class="vt-cell" data-rot="Total vendido" style="font-size:14px;font-weight:700">{{ c.total }}</div>
+              <div class="vt-acoes" style="display:flex;justify-content:flex-end;gap:6px">
                 <button type="button" onClick="{{ c.edit }}" title="Editar" style="width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s" style-hover="color:var(--brand2);border-color:var(--brand2)">
                   <span style="width:15px;height:15px;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></span>
                 </button>
@@ -542,7 +644,7 @@
           <button type="button" onClick="{{ newQuote }}" style="background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;border:0;border-radius:12px;padding:12px 20px;font-size:14.5px;font-weight:700;cursor:pointer;box-shadow:0 12px 26px -14px rgba(29,78,216,.85)">+ Novo orçamento</button>
         </div>
         <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)">
-          <div class="vt-torc" style="display:grid;grid-template-columns:90px 2fr 1fr 1fr 1.1fr 150px;gap:12px;padding:14px 20px;background:var(--soft);border-bottom:1px solid var(--line);font-size:12px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase">
+          <div class="vt-torc vt-thead" style="display:grid;grid-template-columns:90px 2fr 1fr 1fr 1.1fr 150px;gap:12px;padding:14px 20px;background:var(--soft);border-bottom:1px solid var(--line);font-size:12px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase">
             <div>Nº</div><div>Cliente</div><div class="vt-hidem">Data</div><div class="vt-hidem">Validade</div><div>Total</div><div style="text-align:right">Status</div>
           </div>
           <sc-for list="{{ quoteRows }}" as="q" hint-placeholder-count="8">
@@ -551,8 +653,8 @@
               <div style="min-width:0"><div style="font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ q.cliente }}</div><div style="color:var(--muted);font-size:12.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ q.resumo }}</div></div>
               <div class="vt-hidem" style="font-size:13.5px;color:var(--muted);font-weight:600">{{ q.data }}</div>
               <div class="vt-hidem" style="font-size:13.5px;color:var(--muted);font-weight:600">{{ q.validade }}</div>
-              <div style="font-size:14.5px;font-weight:700">{{ q.total }}</div>
-              <div style="display:flex;align-items:center;justify-content:flex-end;gap:7px">
+              <div class="vt-cell" data-rot="Total" style="font-size:14.5px;font-weight:700">{{ q.total }}</div>
+              <div class="vt-acoes" style="display:flex;align-items:center;justify-content:flex-end;gap:7px">
                 <span style="font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ q.tint }};color:{{ q.color }}">{{ q.status }}</span>
                 <button type="button" onClick="{{ q.pdf }}" title="Ver PDF" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s" style-hover="color:var(--brand2);border-color:var(--brand2)">
                   <span style="width:15px;height:15px;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="9" y1="18" x2="13" y2="18"/></svg></span>
@@ -1336,13 +1438,18 @@ class Component extends DCLogic {
 
     // A pagina de Servicos saiu: servico agora e digitado dentro do proprio
     // orcamento, junto com os produtos que ele consome (item 7).
-    const navDef = [['dash', 'Dashboard', ICON.dash], ['clientes', 'Clientes', ICON.users], ['orcamentos', 'Orçamentos', ICON.file], ['config', 'Configurações', ICON.gear]];
+    const navDef = [['dash', 'Dashboard', ICON.dash, 'Início'], ['clientes', 'Clientes', ICON.users, 'Clientes'], ['orcamentos', 'Orçamentos', ICON.file, 'Orçamentos'], ['config', 'Configurações', ICON.gear, 'Ajustes']];
     const nav = navDef.map(n => {
       const active = v === n[0] || (n[0] === 'clientes' && v === 'cliente') || (n[0] === 'orcamentos' && v === 'editor');
       return {
         label: n[1], icon: svg(n[2]), on: () => this.go(n[0]),
         bg: active ? 'linear-gradient(135deg,#1d4ed8,#2f6bff)' : 'transparent',
-        color: active ? '#fff' : 'var(--sideText)'
+        color: active ? '#fff' : 'var(--sideText)',
+        // Rotulo curto para a barra inferior: "Configurações" nao cabe em
+        // 1/4 da largura de um celular sem quebrar ou truncar feio.
+        labelCurto: n[3],
+        botColor: active ? 'var(--brand2)' : 'var(--muted)',
+        botBar: active ? 'var(--brand2)' : 'transparent'
       };
     });
 
@@ -1365,6 +1472,9 @@ class Component extends DCLogic {
     }
     const maxM = Math.max.apply(null, months.map(m => m.soma).concat([1]));
     const chart = months.map(m => ({ m: m.m, h: Math.max(6, Math.round(m.soma / maxM * 150)) + 'px', short: m.soma ? 'R$ ' + Math.round(m.soma / 1000) + 'k' : '', full: VS.brl(m.soma) }));
+    // Sem nenhum orçamento aprovado, o gráfico vira uma caixa alta e vazia com
+    // tracinhos no rodapé. Melhor dizer que não há dado do que fingir que há.
+    const chartVazio = months.every(m => !m.soma);
     const statusBars = STATUS_LIST.map(st => {
       const n = db.quotes.filter(q => q.status === st).length;
       return {
@@ -1684,7 +1794,7 @@ class Component extends DCLogic {
       themeIcon: svg(s.theme === 'dark' ? ICON.sun : ICON.moon),
       toggleTheme: () => { const nt = s.theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('vitaliti.theme', nt); this.setState({ theme: nt }); },
 
-      kpis, chart, statusBars, lastQuotes, lastClients,
+      kpis, chart, chartVazio, chartTem: !chartVazio, statusBars, lastQuotes, lastClients,
 
       cliQ: s.cliQ, cliUF: s.cliUF, cliSort: s.cliSort, ufs, clientRows,
       cliCount: allClients.length + ' cliente(s) encontrados',
