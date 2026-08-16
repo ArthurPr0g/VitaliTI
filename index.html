@@ -1,8 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- SEO. Fica no <head> de verdade, nao no <helmet> do <x-dc>: o runtime
+     reinjeta o conteudo do helmet a cada render, o que duplicaria as tags. -->
+<title>Vitaliti Soluções Tecnológicas — CFTV, Cabeamento e Automação em Goiânia</title>
+<meta name="description" content="Infraestrutura de rede, CFTV, controle de acesso, interfonia e automação para empresas, condomínios e residências em Goiás e Brasília. Peça seu orçamento.">
+<link rel="canonical" href="https://www.vitalitisolucoes.com.br/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0a1526">
+
+<!-- Open Graph: sem isso o link compartilhado no WhatsApp e no Instagram
+     chega como texto puro, sem imagem nem titulo. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vitaliti Soluções Tecnológicas">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:url" content="https://www.vitalitisolucoes.com.br/">
+<meta property="og:title" content="Vitaliti Soluções Tecnológicas — CFTV, Cabeamento e Automação">
+<meta property="og:description" content="Infraestrutura de rede, CFTV, controle de acesso, interfonia e automação para empresas, condomínios e residências em Goiás e Brasília.">
+<meta property="og:image" content="https://www.vitalitisolucoes.com.br/assets/favicon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Vitaliti Soluções Tecnológicas — CFTV, Cabeamento e Automação">
+<meta name="twitter:description" content="Infraestrutura de rede, CFTV, controle de acesso, interfonia e automação para empresas, condomínios e residências em Goiás e Brasília.">
+<meta name="twitter:image" content="https://www.vitalitisolucoes.com.br/assets/favicon-512.png">
+
+<!-- Dados estruturados. `ProfessionalService` com `areaServed` e sem
+     `address` e o formato para empresa que atende no endereco do cliente:
+     declarar um endereco fixo que nao existe prejudicaria o resultado local. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "@id": "https://www.vitalitisolucoes.com.br/#empresa",
+  "name": "Vitaliti Soluções Tecnológicas",
+  "url": "https://www.vitalitisolucoes.com.br/",
+  "logo": "https://www.vitalitisolucoes.com.br/assets/favicon-512.png",
+  "image": "https://www.vitalitisolucoes.com.br/assets/favicon-512.png",
+  "description": "Infraestrutura de rede, CFTV, controle de acesso, interfonia e automação para empresas, condomínios e residências.",
+  "telephone": "+55-62-99206-2304",
+  "email": "vitalitiengenharia@gmail.com",
+  "taxID": "48.080.742/0001-09",
+  "vatID": "48080742000109",
+  "priceRange": "$$",
+  "areaServed": [
+    { "@type": "City",  "name": "Goiânia",        "containedInPlace": { "@type": "State", "name": "Goiás" } },
+    { "@type": "State", "name": "Goiás" },
+    { "@type": "State", "name": "Distrito Federal" }
+  ],
+  "sameAs": ["https://www.instagram.com/vitalitisolucoes"],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Serviços",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Cabeamento estruturado" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Rede óptica" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Segurança eletrônica e CFTV" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Controle de acesso" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Interfonia" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Automação Wi-Fi e assistentes de voz" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Outsourcing de TI" } }
+    ]
+  }
+}
+</script>
+
 <script src="./support.js"></script>
 <template id="__bundler_thumbnail" data-bg-color="#0a1526">
   <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">

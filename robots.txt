@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Área restrita: não faz sentido em resultado de busca.
+Disallow: /Gerenciamento.dc.html
+Disallow: /Gerenciamento.dc
+
+Sitemap: https://www.vitalitisolucoes.com.br/sitemap.xml
