@@ -186,12 +186,17 @@
        deitado. Com largura x altura explicitas, largura < altura, nao ha o
        que reinterpretar.
        Precisa vir depois do @page do support.js, que define margin:0.5cm. */
-    @page{ size:210mm 297mm; margin:12mm; }
+    /* margin:0 e proposital, nao descuido.
+       O Chrome imprime a URL e a data/hora nas MARGENS da pagina. Nao existe
+       CSS que desligue isso -- e uma caixa de selecao no dialogo de
+       impressao. Mas sem margem ele fica sem onde desenhar e omite os dois.
+       A margem vira padding da folha, com o mesmo resultado visual. */
+    @page{ size:210mm 297mm; margin:0; }
 
-    /* O @page ja da a margem; o padding da folha aqui so roubaria altura.
-       A largura fica presa na area util do A4 retrato (210 - 2x12) para o
-       conteudo nao poder ficar mais largo que a pagina. */
-    #vt-sheet{ padding:0 !important; width:186mm !important; max-width:186mm !important; }
+    #vt-sheet{
+      width:210mm !important; max-width:210mm !important;
+      padding:12mm !important;   /* faz o papel da margem do @page */
+    }
 
     /* Nunca quebrar uma linha de tabela no meio, e manter cada bloco inteiro
        na mesma pagina. Se transbordar, quebra entre blocos -- nao no meio de
