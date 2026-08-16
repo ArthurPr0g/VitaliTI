@@ -1196,7 +1196,7 @@ class Component extends DCLogic {
     this.setState({ busyKey: 'login', loginErro: '' });
     // O botão só destrava quando o servidor responde — antes era um
     // setTimeout fixo, que agora mentiria sobre o estado da requisição.
-    VS.login(this.state.loginEmail, this.state.loginSenha).then((r) => {
+    VS.login(this.state.loginEmail, this.state.loginSenha, this.state.lembrar).then((r) => {
       this.setState({ busyKey: null });
       if (!r.ok) { this.setState({ loginErro: r.erro }); return; }
       this.db = VS.load();
@@ -1208,7 +1208,7 @@ class Component extends DCLogic {
     if (this.state.busyKey) return;
     this.setState({ busyKey: 'google', loginErro: '' });
     // Sai da página: o Google devolve para cá e o componentDidMount assume.
-    VS.loginGoogle().then((r) => {
+    VS.loginGoogle(this.state.lembrar).then((r) => {
       if (!r.ok) this.setState({ busyKey: null, loginErro: r.erro });
     });
   };

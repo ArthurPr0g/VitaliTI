@@ -182,6 +182,43 @@
   /* ------------------------------------------------------------------ *
    * cliente Supabase
    * ------------------------------------------------------------------ */
+  /* "Manter conectado" de verdade.
+   *
+   * Marcado (padrão): o token vai para o localStorage e a sessão sobrevive a
+   * fechar o navegador — é o que se quer no celular do dia a dia.
+   * Desmarcado: vai para o sessionStorage e acaba junto com a aba, que é o
+   * comportamento esperado num computador emprestado.
+   *
+   * O adaptador precisa existir ANTES do createClient, porque o supabase-js
+   * lê o storage na criação do cliente. Na carga da página escolhemos pelo
+   * lugar onde o token está de fato guardado.
+   */
+  var usarSession = false;
+  try { usarSession = !!sessionStorage.getItem(MIRROR + '.session'); } catch (e) { }
+
+  var storageAdapter = {
+    getItem: function (k) {
+      try { return (usarSession ? sessionStorage : localStorage).getItem(k); } catch (e) { return null; }
+    },
+    setItem: function (k, v) {
+      try { (usarSession ? sessionStorage : localStorage).setItem(k, v); } catch (e) { }
+    },
+    // Remove dos dois: se a pessoa trocar a opção entre um login e outro,
+    // um token órfão no outro storage ressuscitaria a sessão antiga.
+    removeItem: function (k) {
+      try { sessionStorage.removeItem(k); } catch (e) { }
+      try { localStorage.removeItem(k); } catch (e) { }
+    }
+  };
+
+  function setLembrar(lembrar) {
+    usarSession = !lembrar;
+    try {
+      if (usarSession) sessionStorage.setItem(MIRROR + '.session', '1');
+      else sessionStorage.removeItem(MIRROR + '.session');
+    } catch (e) { }
+  }
+
   var sb = null;
   function client() {
     if (sb) return sb;
@@ -192,7 +229,7 @@
       throw new Error('vitaliti-store: SUPABASE_URL não configurada.');
     }
     sb = w.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: storageAdapter }
     });
     return sb;
   }
@@ -322,14 +359,17 @@
   /* ------------------------------------------------------------------ *
    * sessão
    * ------------------------------------------------------------------ */
+  // O espelho segue o mesmo storage do token: guardar a sessão no
+  // localStorage enquanto o token vive no sessionStorage faria o site
+  // público mostrar "logado" depois de fechar o navegador.
   function readMirror() {
-    try { return JSON.parse(localStorage.getItem(MIRROR) || 'null'); } catch (e) { return null; }
+    try { return JSON.parse(storageAdapter.getItem(MIRROR) || 'null'); } catch (e) { return null; }
   }
   function writeMirror(s) {
     currentSession = s;
     try {
-      if (s) localStorage.setItem(MIRROR, JSON.stringify(s));
-      else localStorage.removeItem(MIRROR);
+      if (s) storageAdapter.setItem(MIRROR, JSON.stringify(s));
+      else storageAdapter.removeItem(MIRROR);
     } catch (e) { }
     sessionHandlers.forEach(function (h) { try { h(s); } catch (_) { } });
   }
@@ -565,7 +605,9 @@
   /* ------------------------------------------------------------------ *
    * autenticação
    * ------------------------------------------------------------------ */
-  function login(email, senha) {
+  function login(email, senha, lembrar) {
+    // Precisa vir antes do signIn: o token e gravado dentro dessa chamada.
+    setLembrar(lembrar !== false);
     return client().auth.signInWithPassword({
       email: String(email || '').trim().toLowerCase(),
       password: String(senha || '')
@@ -589,7 +631,8 @@
 
   // Redireciona para o Google e volta para esta mesma página. O
   // detectSessionInUrl do supabase-js consome o retorno automaticamente.
-  function loginGoogle() {
+  function loginGoogle(lembrar) {
+    setLembrar(lembrar !== false);
     return client().auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -614,6 +657,7 @@
   function logout() {
     var p = client().auth.signOut().catch(emitError);
     writeMirror(null);
+    setLembrar(true);   // volta ao padrao para o proximo login
     db = null; snap = null; initPromise = null;
     return p;
   }
