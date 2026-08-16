@@ -1442,7 +1442,10 @@ class Component extends DCLogic {
     const numero = (nums.length ? Math.max.apply(null, nums) : 1023) + 1;
     const hoje = VS.today();
     return {
-      id: null, numero, clienteId: clienteId || '', data: hoje, validade: VS.addDays(hoje, this.db.settings.validadeDias || 15),
+      // Validade nasce vazia: na pratica quase nenhum orcamento leva prazo,
+      // e vir preenchida fazia a proposta prometer uma validade que ninguem
+      // tinha decidido. Quem quiser preenche no campo Validade do orcamento.
+      id: null, numero, clienteId: clienteId || '', data: hoje, validade: null,
       itens: [], descTipo: 'R$', descValor: 0, condicoes: this.db.settings.condicoes, obs: '', status: 'Em andamento'
     };
   }
@@ -1869,7 +1872,7 @@ class Component extends DCLogic {
     /* config */
     const cfg = s.cfg || db.settings;
     const setCfg = (k) => (e) => this.setState({ cfg: Object.assign({}, this.state.cfg, { [k]: e.target.value }) });
-    const cfgFields = [['nome', 'NOME DA EMPRESA'], ['cnpj', 'CNPJ'], ['endereco', 'ENDEREÇO'], ['telefone', 'TELEFONE'], ['email', 'E-MAIL'], ['instagram', 'INSTAGRAM'], ['site', 'SITE'], ['validadeDias', 'VALIDADE PADRÃO (DIAS)']]
+    const cfgFields = [['nome', 'NOME DA EMPRESA'], ['cnpj', 'CNPJ'], ['endereco', 'ENDEREÇO'], ['telefone', 'TELEFONE'], ['email', 'E-MAIL'], ['instagram', 'INSTAGRAM'], ['site', 'SITE']]
       .map(f => ({ label: f[1], value: cfg[f[0]] == null ? '' : String(cfg[f[0]]), on: setCfg(f[0]) }));
 
     return {
