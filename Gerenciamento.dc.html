@@ -547,8 +547,18 @@
           <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:var(--shadow)">
             <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
               <span style="width:52px;height:52px;border-radius:15px;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">{{ det.ini }}</span>
-              <div><div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px">{{ det.nome }}</div><div style="color:var(--muted);font-size:13.5px;margin-top:2px">{{ det.empresa }}</div></div>
+              <div style="min-width:0"><div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px">{{ det.nome }}</div><div style="color:var(--muted);font-size:13.5px;margin-top:2px">{{ det.empresa }}</div></div>
             </div>
+
+            <sc-if value="{{ det.temRota }}" hint-placeholder-val="{{ true }}">
+              <a href="{{ det.wazeUrl }}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-bottom:18px;background:#33ccff;color:#06283d;border-radius:12px;padding:13px;font-size:14.5px;font-weight:800;text-decoration:none">
+                <span style="width:18px;height:18px;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                Traçar rota no Waze
+              </a>
+            </sc-if>
+            <sc-if value="{{ det.semRota }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-bottom:18px;border:1px dashed var(--line);border-radius:12px;padding:12px;text-align:center;color:var(--muted);font-size:13px">Cadastre o endereço para traçar rota até este cliente.</div>
+            </sc-if>
             <div style="display:flex;flex-direction:column;gap:11px">
               <sc-for list="{{ det.campos }}" as="f" hint-placeholder-count="8">
                 <div style="display:flex;justify-content:space-between;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--line)">
@@ -722,10 +732,10 @@
                 </sc-if>
               </div>
               <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px">DATA
-                <input type="date" value="{{ ed.data }}" onChange="{{ ed.setData }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none">
+                <input inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" value="{{ ed.dataBR }}" onInput="{{ ed.setData }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none">
               </label>
               <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px">VALIDADE
-                <input type="date" value="{{ ed.validade }}" onChange="{{ ed.setValidade }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none">
+                <input inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" value="{{ ed.validadeBR }}" onInput="{{ ed.setValidade }}" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;outline:none">
               </label>
             </div>
           </div>
@@ -1395,6 +1405,9 @@ class Component extends DCLogic {
     };
   }
   openEditor(q) {
+    // Zera o texto em digitacao, senao a data do orcamento anterior
+    // reaparece ao abrir outro.
+    this.setState({ dataTxt: null, validadeTxt: null });
     this.setState({ draft: q ? JSON.parse(JSON.stringify(q)) : this.newDraft(), view: 'editor', addId: '' });
     window.scrollTo(0, 0);
   }
@@ -1522,6 +1535,28 @@ class Component extends DCLogic {
       const tot = qs.filter(q => q.status === 'Aprovado').reduce((a, q) => a + VS.quoteTotals(q).total, 0);
       const datas = qs.map(q => q.data).sort();
       det = {
+        // Rota no Waze. `waze.com/ul` abre o app no celular e o site no
+        // desktop -- o esquema `waze://` so funciona com o app instalado e
+        // deixa a pagina em branco se nao estiver.
+        // navigate=yes ja inicia a navegacao em vez de so mostrar o ponto.
+        // Manda o endereco por busca textual: sem coordenada, e o Waze quem
+        // resolve o texto, e ele lida melhor com endereco brasileiro que
+        // qualquer normalizacao que eu fizesse aqui.
+        temRota: !!(String(cli.endereco || '').trim() || String(cli.cidade || '').trim()),
+        semRota: !(String(cli.endereco || '').trim() || String(cli.cidade || '').trim()),
+        wazeUrl: (() => {
+          const end = String(cli.endereco || '').trim();
+          const baixo = end.toLowerCase();
+          // O campo Endereço costuma já vir com cidade e UF (o preenchimento
+          // por CNPJ inclui o bairro, e muita gente digita a cidade junto).
+          // Repetir vira "Goiânia - GO, Goiânia, GO" e atrapalha a busca.
+          const extras = [cli.cidade, cli.uf, cli.cep]
+            .map(x => String(x || '').trim())
+            .filter(x => x && baixo.indexOf(x.toLowerCase()) < 0);
+          return 'https://waze.com/ul?navigate=yes&q=' +
+                 encodeURIComponent([end].concat(extras).filter(Boolean).join(', '));
+        })(),
+
         // Titulo e a empresa; subtitulo e a pessoa de contato. Se so houver
         // contato cadastrado, ele sobe para o titulo e o subtitulo some.
         ini: this.clientInitials(cli),
@@ -1628,8 +1663,24 @@ class Component extends DCLogic {
       totalServicos: VS.brl(dt.servicos), totalProdutos: VS.brl(dt.produtos),
       subtotal: VS.brl(dt.subtotal), desconto: VS.brl(dt.desconto), total: VS.brl(dt.total),
       setCliente: (e) => setD({ clienteId: e.target.value }),
-      setData: (e) => setD({ data: e.target.value }),
-      setValidade: (e) => setD({ validade: e.target.value }),
+      /* O texto digitado fica no state e o ISO vai para o rascunho só quando
+         a data fica válida. Sem isso, "15/0" seria descartado no meio da
+         digitação e o campo voltaria sozinho para o valor anterior. */
+      dataBR: s.dataTxt != null ? s.dataTxt : VS.isoToDateBR(d.data),
+      validadeBR: s.validadeTxt != null ? s.validadeTxt : VS.isoToDateBR(d.validade),
+      setData: (e) => {
+        const t = VS.maskDate(e.target.value);
+        this.setState({ dataTxt: t });
+        const iso = VS.dateToISO(t);
+        if (iso) setD({ data: iso });
+      },
+      setValidade: (e) => {
+        const t = VS.maskDate(e.target.value);
+        this.setState({ validadeTxt: t });
+        const iso = VS.dateToISO(t);
+        if (iso) setD({ validade: iso });
+        else if (!VS.digits(t).length) setD({ validade: null });
+      },
       setStatus: (e) => setD({ status: e.target.value }),
       setDescTipo: (e) => setD({ descTipo: e.target.value }),
       setDescValor: (e) => setD({ descValor: Math.max(0, Number(e.target.value) || 0) }),

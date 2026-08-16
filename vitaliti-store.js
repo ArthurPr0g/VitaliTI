@@ -80,6 +80,42 @@
     return d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})$/, '$1-$2');
   };
   var maskCep = function (s) { return digits(s).slice(0, 8).replace(/(\d{5})(\d{1,3})/, '$1-$2'); };
+
+  /* Data em dd/mm/aaaa.
+   *
+   * `<input type="date">` mostra o formato do IDIOMA DO NAVEGADOR, não o da
+   * página: num Chrome em inglês aparece mm/dd/aaaa. Não há atributo nem CSS
+   * que mude isso — por isso o campo virou texto com máscara.
+   *
+   * maskDate formata enquanto se digita; dateToISO converte para o formato
+   * que o Postgres espera, devolvendo '' enquanto a data ainda não é válida.
+   */
+  var maskDate = function (s) {
+    var d = digits(s).slice(0, 8);
+    if (d.length <= 2) return d;
+    if (d.length <= 4) return d.slice(0, 2) + '/' + d.slice(2);
+    return d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4);
+  };
+
+  var dateToISO = function (s) {
+    var d = digits(s);
+    if (d.length !== 8) return '';
+    var dia = parseInt(d.slice(0, 2), 10);
+    var mes = parseInt(d.slice(2, 4), 10);
+    var ano = parseInt(d.slice(4), 10);
+    if (mes < 1 || mes > 12 || dia < 1 || ano < 1900) return '';
+    // Confere o dia contra o mês real: 31/02 não pode virar 03/03.
+    var dt = new Date(ano, mes - 1, dia);
+    if (dt.getFullYear() !== ano || dt.getMonth() !== mes - 1 || dt.getDate() !== dia) return '';
+    return ano + '-' + String(mes).padStart(2, '0') + '-' + String(dia).padStart(2, '0');
+  };
+
+  var isoToDateBR = function (iso) {
+    if (!iso) return '';
+    var p = String(iso).slice(0, 10).split('-');
+    if (p.length !== 3) return '';
+    return p[2] + '/' + p[1] + '/' + p[0];
+  };
   var sanitize = function (s) { return String(s == null ? '' : s).replace(/[<>]/g, '').trim().slice(0, 400); };
 
   /* Totais do orçamento.
@@ -603,6 +639,7 @@
     uid: uid, today: today, addDays: addDays,
     brl: brl, dateBR: dateBR, monthLabel: monthLabel,
     maskDoc: maskDoc, maskPhone: maskPhone, maskCep: maskCep,
+    maskDate: maskDate, dateToISO: dateToISO, isoToDateBR: isoToDateBR,
     digits: digits, sanitize: sanitize, quoteTotals: quoteTotals, quoteParts: quoteParts, logAction: logAction,
     session: session, login: login, loginGoogle: loginGoogle, recoverPassword: recoverPassword,
     logout: logout, can: can,
