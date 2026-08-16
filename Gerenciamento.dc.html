@@ -158,13 +158,31 @@
       margin-bottom:1px;
     }
     .vt-cell{ margin-top:9px; }
-    /* Acoes voltam a ficar lado a lado, encostadas a direita. */
+    /* Editar e excluir ocupavam uma linha inteira so para eles. Vao para o
+       canto superior direito do cartao, aproveitando o espaco vazio ao lado
+       do nome -- economiza uma linha por registro. */
+    .vt-tcli, .vt-torc{ position:relative !important; }
     .vt-acoes{
+      position:absolute !important; top:11px; right:13px;
       display:flex !important; justify-content:flex-end !important;
-      gap:8px; margin-top:11px;
-      padding-top:11px; border-top:1px solid var(--line);
+      gap:7px; margin:0 !important; padding:0 !important; border:0 !important;
+      width:auto !important;
     }
     .vt-acoes > *{ width:auto !important; }
+    /* Reserva a faixa da direita para os botoes nao cobrirem o texto. */
+    .vt-tcli > *:not(.vt-acoes), .vt-torc > *:not(.vt-acoes){ padding-right:82px; }
+    .vt-tcli > .vt-cell, .vt-torc > .vt-cell{ padding-right:0; }
+
+    /* Ultimos orcamentos: cliente na primeira linha, valor e status na
+       segunda. Os tres lado a lado nao cabem em 430px e transbordavam. */
+    .vt-lastq{ flex-wrap:wrap !important; align-items:flex-start !important; gap:6px 10px !important; }
+    .vt-lastq-nome{ flex:0 0 100% !important; }
+    .vt-lastq-val{ order:2; }
+    .vt-lastq-st{ order:1; margin-left:auto; }
+
+    /* Ultimos clientes: a data de cadastro e a informacao menos util aqui e
+       era ela que empurrava a linha para fora. */
+    .vt-lastc-data{ display:none !important; }
   }
   /* Editor de orcamento em tela estreita: os campos numericos descem para
      uma segunda linha em vez de espremer tudo lado a lado. */
@@ -470,13 +488,13 @@
             <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16.5px;margin-bottom:16px">Últimos orçamentos</div>
             <div style="display:flex;flex-direction:column">
               <sc-for list="{{ lastQuotes }}" as="q" hint-placeholder-count="5">
-                <button type="button" class="vt-row" onClick="{{ q.open }}" style="display:flex;align-items:center;gap:12px;background:none;border:0;border-top:1px solid var(--line);padding:12px 8px;cursor:pointer;text-align:left;color:var(--text);border-radius:8px">
-                  <div style="flex:1;min-width:0">
+                <button type="button" class="vt-row vt-lastq" onClick="{{ q.open }}" style="display:flex;align-items:center;gap:12px;background:none;border:0;border-top:1px solid var(--line);padding:12px 8px;cursor:pointer;text-align:left;color:var(--text);border-radius:8px;width:100%">
+                  <div class="vt-lastq-nome" style="flex:1;min-width:0">
                     <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ q.cliente }}</div>
                     <div style="color:var(--muted);font-size:12.5px;margin-top:2px">Nº {{ q.numero }} · {{ q.data }}</div>
                   </div>
-                  <div style="font-size:14px;font-weight:700">{{ q.total }}</div>
-                  <span style="font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ q.tint }};color:{{ q.color }}">{{ q.status }}</span>
+                  <div class="vt-lastq-val" style="font-size:14px;font-weight:700;white-space:nowrap">{{ q.total }}</div>
+                  <span class="vt-lastq-st" style="font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:999px;white-space:nowrap;background:{{ q.tint }};color:{{ q.color }}">{{ q.status }}</span>
                 </button>
               </sc-for>
             </div>
@@ -485,13 +503,13 @@
             <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16.5px;margin-bottom:16px">Últimos clientes</div>
             <div style="display:flex;flex-direction:column">
               <sc-for list="{{ lastClients }}" as="c" hint-placeholder-count="5">
-                <button type="button" class="vt-row" onClick="{{ c.open }}" style="display:flex;align-items:center;gap:12px;background:none;border:0;border-top:1px solid var(--line);padding:12px 8px;cursor:pointer;text-align:left;color:var(--text);border-radius:8px">
-                  <span style="width:34px;height:34px;border-radius:10px;background:var(--soft);color:var(--brand2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">{{ c.ini }}</span>
+                <button type="button" class="vt-row vt-lastc" onClick="{{ c.open }}" style="display:flex;align-items:center;gap:12px;background:none;border:0;border-top:1px solid var(--line);padding:12px 8px;cursor:pointer;text-align:left;color:var(--text);border-radius:8px;width:100%">
+                  <span style="flex:0 0 34px;width:34px;height:34px;border-radius:10px;background:var(--soft);color:var(--brand2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">{{ c.ini }}</span>
                   <div style="flex:1;min-width:0">
                     <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.nome }}</div>
-                    <div style="color:var(--muted);font-size:12.5px;margin-top:2px">{{ c.cidade }} · {{ c.doc }}</div>
+                    <div style="color:var(--muted);font-size:12.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.cidade }} · {{ c.doc }}</div>
                   </div>
-                  <div style="color:var(--muted);font-size:12.5px">{{ c.desde }}</div>
+                  <div class="vt-lastc-data" style="flex:0 0 auto;color:var(--muted);font-size:12.5px;white-space:nowrap">{{ c.desde }}</div>
                 </button>
               </sc-for>
             </div>
