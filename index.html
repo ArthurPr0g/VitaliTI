@@ -709,16 +709,47 @@ class Component extends DCLogic {
       const d = el.getAttribute('data-delay');
       if (d) el.style.transitionDelay = d + 'ms';
     });
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.style.opacity = '1';
-          e.target.style.transform = 'translateY(0)';
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
-    revealEls.forEach(el => io.observe(el));
+    const revelar = (el) => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    };
+    const revelarTudo = () => revealEls.forEach(revelar);
+
+    /* A animacao de entrada e enfeite; o conteudo e o que importa.
+       Antes, o JS zerava a opacidade de tudo e so o IntersectionObserver
+       podia devolve-la -- um unico ponto de falha. Em alguns iPhones o
+       observer nao disparava na secao de clientes e ela ficava invisivel
+       para sempre: aparecia so um retangulo escuro.
+       Agora ha varios caminhos para revelar, e o enfeite so e aplicado se
+       houver como desfaze-lo. */
+
+    const temObserver = typeof IntersectionObserver === 'function';
+    const menosMovimento = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!temObserver || menosMovimento) {
+      // Sem meio confiavel de revelar (ou o usuario pediu menos animacao):
+      // nao esconde nada. Melhor sem animacao do que sem conteudo.
+      revealEls.forEach(el => { el.style.transition = 'none'; });
+      revelarTudo();
+    } else {
+      // threshold minimo e rootMargin positivo: revela um pouco ANTES de
+      // entrar na tela. O -8% original exigia que o bloco entrasse bem na
+      // area visivel, e bloco alto em tela pequena as vezes nao alcancava.
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { revelar(e.target); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.01, rootMargin: '0px 0px 20% 0px' });
+      revealEls.forEach(el => io.observe(el));
+
+      // Redes de seguranca independentes entre si. Basta uma funcionar.
+      const soltar = () => { io.disconnect(); revelarTudo(); };
+      setTimeout(soltar, 1500);
+      window.addEventListener('load', () => setTimeout(soltar, 600), { once: true });
+      window.addEventListener('scroll', soltar, { once: true, passive: true });
+      window.addEventListener('touchstart', soltar, { once: true, passive: true });
+    }
 
     // Count-up
     const counters = document.querySelectorAll('[data-count]');
