@@ -475,6 +475,13 @@
     </div>
   </div>
 
+  <sc-if value="{{ versaoNova }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:14px;right:14px;bottom:84px;z-index:70;display:flex;align-items:center;gap:12px;background:var(--side);color:#fff;border-radius:14px;padding:13px 16px;box-shadow:0 18px 40px -18px rgba(8,17,33,.8);animation:vtUp .35s cubic-bezier(.16,1,.3,1) both">
+      <span style="flex:1;min-width:0;font-size:13.5px;font-weight:600;line-height:1.4">Uma versão mais nova do sistema foi publicada.</span>
+      <button type="button" onClick="{{ recarregarVersao }}" style="flex:0 0 auto;background:#fff;color:var(--side);border:0;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:800;cursor:pointer">Atualizar</button>
+    </div>
+  </sc-if>
+
   <div id="vt-main" style="flex:1;min-width:0;min-height:100vh;display:flex;flex-direction:column">
     <header style="position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:14px 26px;display:flex;align-items:center;gap:18px">
       <div style="flex:1;min-width:0">
@@ -1250,6 +1257,7 @@ class Component extends DCLogic {
     VS.onError((msg) => this.toast('Erro ao gravar: ' + msg, 'erro'));
 
     this.montarPuxarParaAtualizar();
+    this.montarDetectorDeVersao();
 
     // O db agora vem do Postgres. Nada renderiza antes da hidratação.
     VS.init().then(({ session }) => {
@@ -1260,6 +1268,47 @@ class Component extends DCLogic {
       if (wantsPanel) this.splash('Preparando o gerenciamento…', () => { });
     }).catch(() => {
       this.setState({ session: null, view: 'login', loading: false, loginErro: 'Não foi possível conectar ao servidor. Verifique sua internet e recarregue a página.' });
+    });
+  }
+
+  /* Detecta versao nova publicada.
+   *
+   * O Vercel manda "max-age=0, must-revalidate", entao uma navegacao nova
+   * sempre pega o arquivo atual. O problema e quem NAO navega: aba aberta
+   * ha dias, atalho na tela de inicio do iPhone, navegador interno do
+   * WhatsApp. Essa pessoa fica na versao antiga sem saber.
+   *
+   * Comparar o ETag do proprio HTML resolve sem precisar de build nem de
+   * arquivo de versao para manter a mao: se o arquivo publicado mudou, o
+   * ETag muda.
+   */
+  montarDetectorDeVersao() {
+    if (this._versaoPronta) return;
+    this._versaoPronta = true;
+
+    const lerEtag = () => fetch(location.pathname, { method: 'HEAD', cache: 'no-store' })
+      .then(r => r.headers.get('etag') || r.headers.get('last-modified'))
+      .catch(() => null);
+
+    lerEtag().then(inicial => {
+      if (!inicial) return;             // servidor sem ETag: nao da para comparar
+      this._etag = inicial;
+
+      const conferir = () => {
+        if (this._avisouVersao) return Promise.resolve(false);
+        return lerEtag().then(atual => {
+          if (!atual || atual === this._etag) return false;
+          this._avisouVersao = true;
+          this.setState({ versaoNova: true });
+          return true;
+        });
+      };
+      this._conferirVersao = conferir;
+
+      // Quando a pessoa volta para a aba e a cada 10 min com a aba ativa.
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) conferir(); });
+      setInterval(() => { if (!document.hidden) conferir(); }, 600000);
+      setTimeout(conferir, 20000);
     });
   }
 
@@ -1323,6 +1372,13 @@ class Component extends DCLogic {
 
       const marca = el.querySelector('.vt-ptr-marca');
       if (marca) marca.style.transform = '';   // devolve o giro ao CSS
+
+      // Se saiu versao nova, puxar recarrega a pagina em vez de so os dados.
+      // E o gesto que a pessoa ja faz esperando "atualizar" -- nao faz sentido
+      // ela puxar e continuar numa versao velha.
+      if (this._conferirVersao) {
+        this._conferirVersao().then(temNova => { if (temNova) location.reload(); });
+      }
 
       const comecou = Date.now();
       VS.reload()
@@ -2064,6 +2120,14 @@ class Component extends DCLogic {
       isServicos: v === 'servicos', isOrcamentos: v === 'orcamentos', isEditor: v === 'editor', isConfig: v === 'config',
       loading: s.loading,
       ptrTexto: s.ptrEstado === 'ok' ? 'Atualizado' : (s.ptrEstado === 'girando' ? 'Atualizando…' : 'Solte para atualizar'),
+      versaoNova: !!s.versaoNova,
+      // reload(true) nao existe mais nos navegadores atuais; o parametro na
+      // URL e o que garante ignorar qualquer copia guardada.
+      recarregarVersao: () => {
+        const u = new URL(location.href);
+        u.searchParams.set('v', Date.now().toString(36));
+        location.replace(u.toString());
+      },
 
       loginEmail: s.loginEmail, loginSenha: s.loginSenha, loginErro: s.loginErro, lembrar: s.lembrar, recover: s.recover,
       loginLabel: s.busyKey === 'login' ? 'Entrando…' : 'Entrar no gerenciamento',
