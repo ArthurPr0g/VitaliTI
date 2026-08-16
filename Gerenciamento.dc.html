@@ -196,7 +196,15 @@
     #vt-sheet{
       width:210mm !important; max-width:210mm !important;
       padding:12mm !important;   /* faz o papel da margem do @page */
+      box-sizing:border-box !important;
+      /* Coluna com altura de pagina inteira para o bloco de fecho poder ser
+         empurrado ate embaixo. Sem isso as assinaturas ficam logo apos a
+         ultima tabela, no meio da folha. */
+      min-height:297mm !important;
+      display:flex !important; flex-direction:column !important;
     }
+    /* Empurra condicoes, assinaturas e rodape para o pe da pagina. */
+    .vt-pdf-rodape{ margin-top:auto !important; }
 
     /* Nunca quebrar uma linha de tabela no meio, e manter cada bloco inteiro
        na mesma pagina. Se transbordar, quebra entre blocos -- nao no meio de
@@ -212,6 +220,11 @@
      Vale tambem na tela, senao a previa mentiria sobre o resultado impresso. */
   /* As tabelas tem font-size inline, que ganha da classe -- por isso o
      !important aqui. Sem ele so o padding encolhia e a fonte ficava igual. */
+  /* Tambem na tela: a previa tem que mostrar onde as assinaturas vao cair
+     de fato. Sem isso a folha na tela e a impressa ficam diferentes. */
+  #vt-sheet{ display:flex; flex-direction:column; box-sizing:border-box; }
+  #vt-sheet .vt-pdf-rodape{ margin-top:auto; }
+
   #vt-sheet.dc-2{ font-size:10px; line-height:1.35; }
   #vt-sheet.dc-2 table{ font-size:10px !important; }
   #vt-sheet.dc-2 td, #vt-sheet.dc-2 th{ padding:4px 9px !important; }
@@ -245,7 +258,10 @@
   /* A mensagem de cortesia ("Agradecemos a oportunidade…") e a primeira coisa
      dispensavel quando falta espaco: nao muda nada do que foi orcado. */
   #vt-sheet.dc-3 .vt-pdf-msg{ display:none; }
-  #vt-sheet.dc-3 .vt-pdf-assin, #vt-sheet.dc-4 .vt-pdf-assin{ margin-top:12px !important; }
+  /* Mesmo apertado, a area de assinatura precisa caber uma caneta. Reduz,
+     mas nao some. */
+  #vt-sheet.dc-3 .vt-pdf-assin{ margin-top:40px !important; }
+  #vt-sheet.dc-4 .vt-pdf-assin{ margin-top:32px !important; }
   #vt-sheet.dc-3 .vt-pdf-rod, #vt-sheet.dc-4 .vt-pdf-rod{ margin-top:9px !important; }
   #vt-sheet.dc-3 .vt-pdf-tot > div, #vt-sheet.dc-4 .vt-pdf-tot > div{ padding-top:1px !important; padding-bottom:1px !important; }
 </style>
@@ -1005,7 +1021,7 @@
       </div>
     </div>
 
-    <div class="vt-nobreak vt-pdf-fim">
+    <div class="vt-nobreak vt-pdf-fim vt-pdf-rodape">
       <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:10.5px">
         <div><div style="font-size:9.5px;font-weight:800;letter-spacing:.6px;color:#64748b;margin-bottom:4px">CONDIÇÕES COMERCIAIS</div><div style="line-height:1.5">{{ pdf.condicoes }}</div></div>
         <div><div style="font-size:9.5px;font-weight:800;letter-spacing:.6px;color:#64748b;margin-bottom:4px">OBSERVAÇÕES</div><div style="line-height:1.5">{{ pdf.obs }}</div></div>
@@ -1013,7 +1029,10 @@
 
       <div class="vt-pdf-msg" style="margin-top:10px;background:#f4f7fc;border-left:3px solid #38bdf8;padding:7px 13px;font-size:10.5px;line-height:1.45;color:#334155">{{ pdf.mensagem }}</div>
 
-      <div class="vt-pdf-assin" style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:40px;font-size:10.5px;text-align:center">
+      <!-- margin-top grande de proposito: e o espaco fisico para assinar a
+           mao. A linha de assinatura e o border-top de cada celula, entao
+           o respiro acima dela e que vira area util na folha impressa. -->
+      <div class="vt-pdf-assin" style="margin-top:54px;display:grid;grid-template-columns:1fr 1fr;gap:40px;font-size:10.5px;text-align:center">
         <div><div style="border-top:1px solid #0f2147;padding-top:6px;font-weight:700">Prestador</div><div style="color:#64748b;margin-top:2px">{{ pdf.empresa }}</div></div>
         <div><div style="border-top:1px solid #0f2147;padding-top:6px;font-weight:700">Sacado</div><div style="color:#64748b;margin-top:2px">{{ pdf.clienteNome }}</div></div>
       </div>
@@ -1749,6 +1768,21 @@ class Component extends DCLogic {
 
     /* pdf */
     const pq = db.quotes.filter(q => q.id === s.pdfId)[0];
+
+    /* O navegador usa o <title> da pagina como nome sugerido do arquivo ao
+       salvar em PDF. Trocando enquanto a proposta esta aberta, o arquivo sai
+       como "Orcamento 1026 - Clinica Nexum.pdf" em vez de "Gerenciamento".
+       Feito aqui, num lugar so, porque a visualizacao abre por varios
+       caminhos (lista, editor, salvar e gerar PDF). */
+    (() => {
+      const padrao = 'Gerenciamento — Vitaliti Soluções Tecnológicas';
+      if (!pq) { if (document.title !== padrao) document.title = padrao; return; }
+      const emp = this.clientCompany(this.clientById(pq.clienteId));
+      // Barra e dois-pontos viram caractere estranho no nome do arquivo.
+      const limpo = String(emp || '').replace(/[\\/:*?"<>|]/g, '-').trim();
+      const alvo = 'Orçamento ' + pq.numero + (limpo && limpo !== '—' ? ' - ' + limpo : '');
+      if (document.title !== alvo) document.title = alvo;
+    })();
     const cfgNow = db.settings;
     let pdf = { itens: [] };
     if (pq) {
