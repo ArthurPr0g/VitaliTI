@@ -78,6 +78,58 @@
     .vt-tcli{ grid-template-columns:2.1fr 1fr 108px !important; }
     .vt-torc{ grid-template-columns:90px 2fr 1.1fr 150px !important; }
   }
+  /* ---- Puxar para atualizar ----------------------------------------
+     overscroll-behavior desliga o pull-to-refresh do navegador, que
+     recarregava a pagina inteira (reautentica, rebaixa scripts, reidrata
+     tudo). No lugar entra uma recarga so dos dados. */
+  html, body{ overscroll-behavior-y:contain; }
+
+  #vt-ptr{
+    position:fixed; top:0; left:0; right:0; z-index:55;
+    display:flex; align-items:center; justify-content:center;
+    height:0; pointer-events:none; overflow:hidden;
+    will-change:height;
+  }
+  #vt-ptr .vt-ptr-caixa{
+    display:flex; flex-direction:column; align-items:center; gap:7px;
+    transform:translateY(6px);
+  }
+  #vt-ptr .vt-ptr-marca{
+    width:34px; height:34px; display:block;
+    color:var(--brand2);
+    will-change:transform;
+  }
+  #vt-ptr .vt-ptr-txt{
+    font-size:11px; font-weight:800; letter-spacing:.5px;
+    color:var(--muted); text-transform:uppercase;
+    opacity:0; transition:opacity .25s ease;
+  }
+  #vt-ptr.pronto .vt-ptr-txt, #vt-ptr.girando .vt-ptr-txt{ opacity:1; }
+
+  /* Solto: volta ao lugar com desaceleracao, sem pulo. */
+  #vt-ptr.solto{ transition:height .5s cubic-bezier(.22,1,.36,1); }
+
+  /* Os quatro terminais da marca acendem em sequencia, como sinal
+     percorrendo o circuito -- e o que a empresa instala. */
+  @keyframes vtPtrGira{ to{ transform:rotate(360deg); } }
+  @keyframes vtPtrPulso{
+    0%,100%{ opacity:.25; r:5; }
+    45%{ opacity:1; r:7.5; }
+  }
+  #vt-ptr.girando .vt-ptr-marca{ animation:vtPtrGira 1s cubic-bezier(.55,.15,.45,.85) infinite; }
+  #vt-ptr.girando .vt-no{ animation:vtPtrPulso 1.1s ease-in-out infinite; }
+  #vt-ptr.girando .vt-no:nth-of-type(2){ animation-delay:.13s; }
+  #vt-ptr.girando .vt-no:nth-of-type(3){ animation-delay:.26s; }
+  #vt-ptr.girando .vt-no:nth-of-type(4){ animation-delay:.39s; }
+
+  /* Confirmacao: a marca dá um leve pulso e some. */
+  @keyframes vtPtrOk{ 0%{ transform:scale(1); } 40%{ transform:scale(1.18); } 100%{ transform:scale(1); } }
+  #vt-ptr.ok .vt-ptr-marca{ animation:vtPtrOk .45s cubic-bezier(.34,1.56,.64,1); }
+
+  @media (prefers-reduced-motion:reduce){
+    #vt-ptr .vt-ptr-marca, #vt-ptr .vt-no{ animation:none !important; }
+  }
+
   /* A barra inferior so existe no mobile; no desktop quem navega e o #vt-side. */
   #vt-botnav{ display:none; }
 
@@ -402,6 +454,26 @@
       </button>
     </sc-for>
   </nav>
+
+  <!-- Puxar para atualizar. A altura acompanha o dedo; o giro e o pulso dos
+       terminais ficam por conta do CSS. -->
+  <div id="vt-ptr" aria-hidden="true">
+    <div class="vt-ptr-caixa">
+      <svg class="vt-ptr-marca" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="39" stroke="currentColor" stroke-width="5"/>
+        <path d="M20 68 L45 43" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M28 78 L57 49" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M45 43 V34" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M57 49 L62 44" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M48 58 H59" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <circle class="vt-no" cx="45" cy="27" r="5" fill="currentColor"/>
+        <circle class="vt-no" cx="68" cy="38" r="5" fill="currentColor"/>
+        <circle class="vt-no" cx="66" cy="58" r="5" fill="currentColor"/>
+        <circle class="vt-no" cx="60" cy="80" r="5" fill="currentColor"/>
+      </svg>
+      <span class="vt-ptr-txt">{{ ptrTexto }}</span>
+    </div>
+  </div>
 
   <div id="vt-main" style="flex:1;min-width:0;min-height:100vh;display:flex;flex-direction:column">
     <header style="position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:14px 26px;display:flex;align-items:center;gap:18px">
@@ -1177,6 +1249,8 @@ class Component extends DCLogic {
     // mostrou "salvo" quando persist() foi chamado.
     VS.onError((msg) => this.toast('Erro ao gravar: ' + msg, 'erro'));
 
+    this.montarPuxarParaAtualizar();
+
     // O db agora vem do Postgres. Nada renderiza antes da hidratação.
     VS.init().then(({ session }) => {
       if (!session) { this.setState({ session: null, view: 'login', loading: false }); return; }
@@ -1187,6 +1261,94 @@ class Component extends DCLogic {
     }).catch(() => {
       this.setState({ session: null, view: 'login', loading: false, loginErro: 'Não foi possível conectar ao servidor. Verifique sua internet e recarregue a página.' });
     });
+  }
+
+  /* Puxar para atualizar.
+   *
+   * O gesto nativo do navegador recarregava a pagina inteira: reautenticar,
+   * rebaixar todos os scripts e reidratar o banco. Aqui recarrega so os
+   * dados, que e o que a pessoa quer ao puxar.
+   *
+   * A altura do indicador acompanha o dedo com resistencia crescente: os
+   * primeiros pixels andam quase 1:1 e vao ficando "pesados", que e o que
+   * da a sensacao de elastico. Sem isso o gesto parece solto.
+   */
+  montarPuxarParaAtualizar() {
+    const el = document.getElementById('vt-ptr');
+    if (!el || this._ptrPronto) return;
+    this._ptrPronto = true;
+
+    const LIMITE = 68;     // distancia que dispara
+    const TETO = 110;      // nao estica alem disso
+    let y0 = null, alt = 0, ativo = false;
+
+    const noTopo = () => (window.scrollY || document.documentElement.scrollTop || 0) <= 0;
+    const set = (h) => { alt = h; el.style.height = h + 'px'; };
+
+    const inicio = (e) => {
+      if (this._ptrGirando || !noTopo() || e.touches.length !== 1) return;
+      y0 = e.touches[0].clientY;
+      ativo = true;
+      el.classList.remove('solto', 'ok');
+    };
+
+    const mover = (e) => {
+      if (!ativo || y0 == null) return;
+      const d = e.touches[0].clientY - y0;
+      if (d <= 0) { if (alt) set(0); return; }
+      if (!noTopo()) { ativo = false; set(0); return; }
+
+      // Resistencia: raiz quadrada faz o avanco desacelerar sozinho.
+      const h = Math.min(TETO, Math.sqrt(d) * 7.5);
+      set(h);
+      el.classList.toggle('pronto', h >= LIMITE);
+      // A marca gira conforme o puxao, ate meia volta no limite.
+      const marca = el.querySelector('.vt-ptr-marca');
+      if (marca) marca.style.transform = 'rotate(' + Math.min(180, (h / LIMITE) * 180) + 'deg)';
+      if (e.cancelable) e.preventDefault();   // segura o scroll do documento
+    };
+
+    const fim = () => {
+      if (!ativo) return;
+      ativo = false; y0 = null;
+      el.classList.add('solto');
+
+      if (alt < LIMITE) { set(0); el.classList.remove('pronto'); return; }
+
+      this._ptrGirando = true;
+      el.classList.remove('pronto');
+      el.classList.add('girando');
+      set(64);
+      this.setState({ ptrEstado: 'girando' });
+
+      const marca = el.querySelector('.vt-ptr-marca');
+      if (marca) marca.style.transform = '';   // devolve o giro ao CSS
+
+      const comecou = Date.now();
+      VS.reload()
+        .then((d) => { this.db = d; this.setState({ cfg: Object.assign({}, d.settings), tick: this.state.tick + 1 }); })
+        .catch(() => this.toast('Não foi possível atualizar agora.', 'erro'))
+        .then(() => {
+          // Segura um minimo para o giro nao piscar em conexao rapida.
+          const falta = Math.max(0, 550 - (Date.now() - comecou));
+          setTimeout(() => {
+            el.classList.remove('girando');
+            el.classList.add('ok');
+            this.setState({ ptrEstado: 'ok' });
+            setTimeout(() => {
+              set(0);
+              this._ptrGirando = false;
+              el.classList.remove('ok');
+              this.setState({ ptrEstado: null });
+            }, 420);
+          }, falta);
+        });
+    };
+
+    window.addEventListener('touchstart', inicio, { passive: true });
+    window.addEventListener('touchmove', mover, { passive: false });
+    window.addEventListener('touchend', fim, { passive: true });
+    window.addEventListener('touchcancel', fim, { passive: true });
   }
 
   /* ---------- infra ---------- */
@@ -1901,6 +2063,7 @@ class Component extends DCLogic {
       isDash: v === 'dash', isClientes: v === 'clientes', isCliente: v === 'cliente' && !!cli,
       isServicos: v === 'servicos', isOrcamentos: v === 'orcamentos', isEditor: v === 'editor', isConfig: v === 'config',
       loading: s.loading,
+      ptrTexto: s.ptrEstado === 'ok' ? 'Atualizado' : (s.ptrEstado === 'girando' ? 'Atualizando…' : 'Solte para atualizar'),
 
       loginEmail: s.loginEmail, loginSenha: s.loginSenha, loginErro: s.loginErro, lembrar: s.lembrar, recover: s.recover,
       loginLabel: s.busyKey === 'login' ? 'Entrando…' : 'Entrar no gerenciamento',
