@@ -743,12 +743,34 @@ class Component extends DCLogic {
       }, { threshold: 0.01, rootMargin: '0px 0px 20% 0px' });
       revealEls.forEach(el => io.observe(el));
 
-      // Redes de seguranca independentes entre si. Basta uma funcionar.
-      const soltar = () => { io.disconnect(); revelarTudo(); };
-      setTimeout(soltar, 1500);
-      window.addEventListener('load', () => setTimeout(soltar, 600), { once: true });
-      window.addEventListener('scroll', soltar, { once: true, passive: true });
-      window.addEventListener('touchstart', soltar, { once: true, passive: true });
+      /* Rede de seguranca que IMITA o observer em vez de atropela-lo.
+         Revelar tudo de uma vez no primeiro scroll matava a revelacao
+         progressiva -- o site inteiro aparecia junto e a animacao sumia.
+         Aqui so entra o que ja esta na area visivel, entao quem esta mais
+         abaixo continua aparecendo conforme a pessoa desce. */
+      const naArea = (el) => {
+        const r = el.getBoundingClientRect();
+        return r.top < window.innerHeight * 1.2 && r.bottom > -80;
+      };
+      let agendado = false;
+      const varrer = () => {
+        agendado = false;
+        revealEls.forEach(el => {
+          if (el.style.opacity !== '1' && naArea(el)) revelar(el);
+        });
+      };
+      const pedirVarredura = () => {
+        if (agendado) return;
+        agendado = true;
+        requestAnimationFrame(varrer);
+      };
+
+      window.addEventListener('scroll', pedirVarredura, { passive: true });
+      window.addEventListener('resize', pedirVarredura, { passive: true });
+      window.addEventListener('load', pedirVarredura, { once: true });
+      // Primeira varredura logo apos montar, para o topo nunca ficar vazio
+      // mesmo se o observer falhar antes de qualquer interacao.
+      setTimeout(varrer, 400);
     }
 
     // Count-up
