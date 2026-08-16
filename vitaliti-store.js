@@ -81,6 +81,52 @@
   };
   var maskCep = function (s) { return digits(s).slice(0, 8).replace(/(\d{5})(\d{1,3})/, '$1-$2'); };
 
+  /* Valor em dinheiro digitado por gente.
+   *
+   * O campo era <input type="number">. Num navegador em pt-BR o teclado
+   * numerico do celular oferece VIRGULA, e o type=number a rejeita: o value
+   * volta vazio e Number('') || 0 dava 0. Ou seja, digitar "1500,50"
+   * gravava R$ 0,00 sem nenhum aviso.
+   *
+   * Aceita as duas convencoes:
+   *   "1500,50"    -> 1500.5
+   *   "1500.50"    -> 1500.5
+   *   "1.500,50"   -> 1500.5   (ponto como separador de milhar)
+   *   "1,500.50"   -> 1500.5   (formato ingles)
+   */
+  var parseMoeda = function (s) {
+    if (typeof s === 'number') return isFinite(s) ? s : 0;
+    var t = String(s == null ? '' : s).replace(/[^\d.,-]/g, '').trim();
+    if (!t) return 0;
+
+    var ultVirgula = t.lastIndexOf(',');
+    var ultPonto = t.lastIndexOf('.');
+
+    if (ultVirgula > -1 && ultPonto > -1) {
+      // O separador decimal e o que aparece por ultimo; o outro e milhar.
+      if (ultVirgula > ultPonto) t = t.replace(/\./g, '').replace(',', '.');
+      else t = t.replace(/,/g, '');
+    } else if (ultVirgula > -1) {
+      // Virgula sozinha: decimal se separa 1 ou 2 casas, senao e milhar.
+      var depois = t.length - ultVirgula - 1;
+      t = (depois > 0 && depois <= 2) ? t.replace(',', '.') : t.replace(/,/g, '');
+    } else if (ultPonto > -1) {
+      var dep = t.length - ultPonto - 1;
+      if (!(dep > 0 && dep <= 2)) t = t.replace(/\./g, '');
+    }
+
+    var n = parseFloat(t);
+    if (!isFinite(n) || n < 0) return 0;
+    return Math.round(n * 100) / 100;   // centavos, sem lixo de ponto flutuante
+  };
+
+  // Mostra o numero com virgula, do jeito que a pessoa vai reconhecer.
+  var moedaParaCampo = function (v) {
+    var n = Number(v) || 0;
+    if (!n) return '';
+    return n.toFixed(2).replace('.', ',');
+  };
+
   /* Data em dd/mm/aaaa.
    *
    * `<input type="date">` mostra o formato do IDIOMA DO NAVEGADOR, não o da
@@ -684,6 +730,7 @@
     brl: brl, dateBR: dateBR, monthLabel: monthLabel,
     maskDoc: maskDoc, maskPhone: maskPhone, maskCep: maskCep,
     maskDate: maskDate, dateToISO: dateToISO, isoToDateBR: isoToDateBR,
+    parseMoeda: parseMoeda, moedaParaCampo: moedaParaCampo,
     digits: digits, sanitize: sanitize, quoteTotals: quoteTotals, quoteParts: quoteParts, logAction: logAction,
     session: session, login: login, loginGoogle: loginGoogle, recoverPassword: recoverPassword,
     logout: logout, can: can,

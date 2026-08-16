@@ -794,7 +794,7 @@
                     <input value="{{ s.nome }}" onInput="{{ s.setNome }}" placeholder="Ex.: CFTV" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14.5px;font-weight:700;outline:none;width:100%">
                   </label>
                   <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.4px">VALOR DO SERVIÇO (R$)
-                    <input type="number" min="0" step="0.01" inputmode="decimal" value="{{ s.valor }}" onInput="{{ s.setValor }}" placeholder="0,00" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14px;font-weight:700;outline:none;width:100%">
+                    <input inputmode="decimal" value="{{ s.valorTxt }}" onInput="{{ s.setValor }}" placeholder="0,00" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14px;font-weight:700;outline:none;width:100%">
                   </label>
                   <button type="button" onClick="{{ s.remove }}" title="Remover serviço" style="width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;font-size:17px;line-height:1;transition:color .2s" style-hover="color:#dc2626">×</button>
                 </div>
@@ -830,7 +830,7 @@
               <div class="vt-prod-row" style="display:grid;grid-template-columns:1fr 74px 110px 96px 32px;gap:8px;align-items:center;margin-bottom:7px">
                 <input value="{{ p.nome }}" onInput="{{ p.setNome }}" placeholder="Produto (ex.: Câmera IP)" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:9px;padding:10px;font-size:13.5px;font-weight:600;outline:none;width:100%">
                 <input type="number" min="0" step="1" inputmode="numeric" value="{{ p.qtd }}" onInput="{{ p.setQtd }}" placeholder="Qtd" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:9px;padding:10px;font-size:13.5px;font-weight:700;outline:none;width:100%">
-                <input type="number" min="0" step="0.01" inputmode="decimal" value="{{ p.valor }}" onInput="{{ p.setValor }}" placeholder="Valor un." style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:9px;padding:10px;font-size:13.5px;font-weight:700;outline:none;width:100%">
+                <input inputmode="decimal" value="{{ p.valorTxt }}" onInput="{{ p.setValor }}" placeholder="0,00" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:9px;padding:10px;font-size:13.5px;font-weight:700;outline:none;width:100%">
                 <div style="font-size:13.5px;font-weight:700;text-align:right">{{ p.subtotal }}</div>
                 <button type="button" onClick="{{ p.remove }}" title="Remover produto" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;font-size:16px;line-height:1;transition:color .2s" style-hover="color:#dc2626">×</button>
               </div>
@@ -857,7 +857,7 @@
                 </select>
               </label>
               <label style="display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.4px">DESCONTO
-                <input type="number" min="0" step="0.01" inputmode="decimal" value="{{ ed.descValor }}" onInput="{{ ed.setDescValor }}" placeholder="0,00" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:700;outline:none">
+                <input inputmode="decimal" value="{{ ed.descValorTxt }}" onInput="{{ ed.setDescValor }}" placeholder="0,00" style="border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:700;outline:none">
               </label>
             </div>
             <label style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.4px">CONDIÇÕES DE PAGAMENTO
@@ -1454,7 +1454,7 @@ class Component extends DCLogic {
   openEditor(q) {
     // Zera o texto em digitacao, senao a data do orcamento anterior
     // reaparece ao abrir outro.
-    this.setState({ dataTxt: null, validadeTxt: null });
+    this.setState({ dataTxt: null, validadeTxt: null, moedaTxt: {}, descTxt: null });
     this.setState({ draft: q ? JSON.parse(JSON.stringify(q)) : this.newDraft(), view: 'editor', addId: '' });
     window.scrollTo(0, 0);
   }
@@ -1730,7 +1730,12 @@ class Component extends DCLogic {
       },
       setStatus: (e) => setD({ status: e.target.value }),
       setDescTipo: (e) => setD({ descTipo: e.target.value }),
-      setDescValor: (e) => setD({ descValor: Math.max(0, Number(e.target.value) || 0) }),
+      descValorTxt: s.descTxt != null ? s.descTxt : VS.moedaParaCampo(d.descValor),
+      setDescValor: (e) => {
+        const t = e.target.value;
+        this.setState({ descTxt: t });
+        setD({ descValor: VS.parseMoeda(t) });
+      },
       setCondicoes: (e) => setD({ condicoes: e.target.value }),
       setObs: (e) => setD({ obs: e.target.value }),
       // Se a busca ja era um CNPJ, o cadastro abre com ele preenchido --
@@ -1755,8 +1760,16 @@ class Component extends DCLogic {
         return {
           nome: sv.nome, valor: sv.valor, descricao: sv.descricao || '',
           valorFmt: VS.brl(Number(sv.valor) || 0),
+          // O texto digitado vive no state enquanto se digita. Sem isso,
+          // "1500," seria reformatado no meio da digitacao e a virgula
+          // desapareceria a cada tecla.
+          valorTxt: (s.moedaTxt && s.moedaTxt[sv.id] != null) ? s.moedaTxt[sv.id] : VS.moedaParaCampo(sv.valor),
           setNome: (e) => troca({ nome: e.target.value }),
-          setValor: (e) => troca({ valor: Math.max(0, Number(e.target.value) || 0) }),
+          setValor: (e) => {
+            const t = e.target.value;
+            this.setState({ moedaTxt: Object.assign({}, this.state.moedaTxt, { [sv.id]: t }) });
+            troca({ valor: VS.parseMoeda(t) });
+          },
           setDescricao: (e) => troca({ descricao: e.target.value }),
           remove: () => setD({ itens: { servicos: partes.servicos.filter((_, i2) => i2 !== idx), produtos: partes.produtos } })
         };
@@ -1771,9 +1784,14 @@ class Component extends DCLogic {
         return {
           nome: p.nome, qtd: p.qtd, valor: p.valor,
           subtotal: VS.brl((Number(p.qtd) || 0) * (Number(p.valor) || 0)),
+          valorTxt: (s.moedaTxt && s.moedaTxt[p.id] != null) ? s.moedaTxt[p.id] : VS.moedaParaCampo(p.valor),
           setNome: (e) => troca({ nome: e.target.value }),
           setQtd: (e) => troca({ qtd: Math.max(0, Number(e.target.value) || 0) }),
-          setValor: (e) => troca({ valor: Math.max(0, Number(e.target.value) || 0) }),
+          setValor: (e) => {
+            const t = e.target.value;
+            this.setState({ moedaTxt: Object.assign({}, this.state.moedaTxt, { [p.id]: t }) });
+            troca({ valor: VS.parseMoeda(t) });
+          },
           remove: () => setD({ itens: { servicos: partes.servicos, produtos: partes.produtos.filter((_, i2) => i2 !== idx) } })
         };
       }),
