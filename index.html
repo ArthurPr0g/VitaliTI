@@ -4,8 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- SEO. Fica no <head> de verdade, nao no <helmet> do <x-dc>: o runtime
-     reinjeta o conteudo do helmet a cada render, o que duplicaria as tags. -->
+<!-- SEO. Fica no head de verdade, nao no bloco helmet do template: o runtime
+     reinjeta aquele bloco a cada render, o que duplicaria as tags.
+     ATENCAO: nao escrever os nomes das tags do runtime entre sinais de maior
+     e menor aqui dentro. O support.js procura essa string no documento e
+     encontraria a ocorrencia do comentario primeiro, quebrando a pagina. -->
 <title>Vitaliti Soluções Tecnológicas — CFTV, Cabeamento e Automação em Goiânia</title>
 <meta name="description" content="Infraestrutura de rede, CFTV, controle de acesso, interfonia e automação para empresas, condomínios e residências em Goiás e Brasília. Peça seu orçamento.">
 <link rel="canonical" href="https://www.vitalitisolucoes.com.br/">
