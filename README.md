@@ -9,6 +9,11 @@ Site público estático com painel de gerenciamento (ERP) protegido por login.
 | **Banco / Auth** | Supabase — projeto `vitaliti-erp`, org `Reserva`, região `sa-east-1` |
 | **Stack** | HTML estático + runtime React embutido (`support.js`) + `supabase-js` |
 
+> **Vai continuar o desenvolvimento?** Leia
+> [`docs/CONTINUIDADE.md`](docs/CONTINUIDADE.md) antes de editar qualquer
+> arquivo. O runtime deste projeto tem armadilhas que não são evidentes no
+> código e já derrubaram o site em produção uma vez.
+
 ## Estrutura
 
 ```
