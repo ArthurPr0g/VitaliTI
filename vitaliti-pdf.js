@@ -243,16 +243,44 @@
     texto(doc, p.total, M + L - 3, y + 8.5, { tam: 13, peso: 'bold', cor: [255, 255, 255], al: 'right' });
     y += 18;
 
-    /* --- fecho, sempre no pé da última página --- */
-    var yf = A4.a - M - ALT_FECHO + 6;
-    if (y > yf) yf = y;   // se o conteúdo passou, segue o fluxo
+    /* --- fecho, sempre no pé da última página ---
+     *
+     * Condições e observações crescem para baixo conforme o texto. A linha de
+     * assinatura ficava numa posição fixa, então observação com mais de duas
+     * linhas passava por cima dela. Aqui a altura real dos dois textos é
+     * medida ANTES de desenhar, e a assinatura desce o quanto for preciso.
+     */
+    var LARG_COL = L * 0.47;
+    var ALT_LINHA = 7.5 * 0.45;
+    var ALT_ASSIN = 24;        // linha + "Prestador"/"Sacado" + nomes
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    var nCond = doc.splitTextToSize(String(p.condicoes == null ? '' : p.condicoes), LARG_COL).length;
+    var nObs = doc.splitTextToSize(String(p.obs == null ? '' : p.obs), LARG_COL).length;
+    var altTextos = Math.max(nCond, nObs) * ALT_LINHA;
+
+    // Altura do fecho: do rótulo até os nomes sob a linha de assinatura.
+    var altFecho = 4 + altTextos + 10 + 8;
+    // Maior início possível para o bloco ainda caber acima do rodapé.
+    var yfMax = A4.a - M - 12 - altFecho;
+    // Posição natural (pé da folha), mas subindo se o texto for grande.
+    var yf = Math.min(A4.a - M - ALT_FECHO + 6, yfMax);
+
+    if (y > yf) {
+      // O conteúdo acima já chegou até aqui.
+      if (y <= yfMax) yf = y;                    // ainda cabe: segue o fluxo
+      else { novaPagina(); yf = Math.min(A4.a - M - ALT_FECHO + 6, yfMax); }
+    }
 
     texto(doc, 'CONDIÇÕES COMERCIAIS', M, yf, { tam: 6.5, peso: 'bold', cor: CINZA });
-    paragrafo(doc, p.condicoes, M, yf + 4, L * 0.47, { tam: 7.5 });
+    paragrafo(doc, p.condicoes, M, yf + 4, LARG_COL, { tam: 7.5 });
     texto(doc, 'OBSERVAÇÕES', M + L * 0.53, yf, { tam: 6.5, peso: 'bold', cor: CINZA });
-    paragrafo(doc, p.obs, M + L * 0.53, yf + 4, L * 0.47, { tam: 7.5 });
+    paragrafo(doc, p.obs, M + L * 0.53, yf + 4, LARG_COL, { tam: 7.5 });
 
-    var ya = A4.a - M - 24;
+    // Sempre logo abaixo dos textos, com folga fixa. Como `yf` já foi
+    // ajustado para caber, isso nunca invade o rodapé nem o texto.
+    var ya = yf + 4 + altTextos + 10;
     doc.setDrawColor(TINTA[0], TINTA[1], TINTA[2]);
     doc.setLineWidth(0.3);
     doc.line(M + 8, ya, M + L * 0.42, ya);
