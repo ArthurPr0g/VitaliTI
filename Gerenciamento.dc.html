@@ -1016,8 +1016,11 @@
 <div id="vt-pdfwrap" style="position:fixed;inset:0;z-index:120;background:rgba(8,17,33,.75);backdrop-filter:blur(6px);overflow:auto;padding:0 0 60px">
   <div id="vt-pdfbar" style="position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 24px;background:#0b1729;color:#fff">
     <div style="display:flex;align-items:center;gap:12px"><img src="assets/logo-vitaliti-white-clean.png" alt="" style="height:22px;width:auto;display:block"><span style="font-weight:700;font-size:14.5px">Proposta nº {{ pdf.numero }} — {{ pdf.clienteNome }}</span></div>
-    <div style="display:flex;gap:9px">
+    <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end">
       <button type="button" onClick="{{ printPdf }}" style="background:linear-gradient(135deg,#1d4ed8,#2f6bff);color:#fff;border:0;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer">{{ pdfLabel }}</button>
+      <sc-if value="{{ podeShare }}" hint-placeholder-val="{{ true }}">
+        <button type="button" onClick="{{ sharePdf }}" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer">Compartilhar</button>
+      </sc-if>
       <button type="button" onClick="{{ closePdf }}" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer">Fechar</button>
     </div>
   </div>
@@ -2206,13 +2209,25 @@ class Component extends DCLogic {
       printPdf: () => {
         if (!window.VitalitiPDF) { this.toast('Gerador de PDF não carregou. Recarregue a página.', 'erro'); return; }
         try {
-          const p = window.VitalitiPDF.abrir(pdf);
-          if (p && p.catch) p.catch((e) => this.toast('Não foi possível gerar o PDF: ' + (e && e.message ? e.message : e), 'erro'));
+          window.VitalitiPDF.baixar(pdf);
         } catch (e) {
           this.toast('Não foi possível gerar o PDF: ' + (e && e.message ? e.message : e), 'erro');
         }
       },
-      pdfLabel: 'Baixar / Compartilhar PDF',
+      /* Ação separada do download. Antes os dois caminhos saíam do mesmo
+         botão e o Windows abria a folha de compartilhamento do sistema, que
+         não salva arquivo -- no desktop não havia como baixar. */
+      sharePdf: () => {
+        if (!window.VitalitiPDF) { this.toast('Gerador de PDF não carregou. Recarregue a página.', 'erro'); return; }
+        try {
+          const p = window.VitalitiPDF.compartilhar(pdf);
+          if (p && p.catch) p.catch((e) => this.toast('Não foi possível compartilhar: ' + (e && e.message ? e.message : e), 'erro'));
+        } catch (e) {
+          this.toast('Não foi possível compartilhar: ' + (e && e.message ? e.message : e), 'erro');
+        }
+      },
+      podeShare: !!(window.VitalitiPDF && window.VitalitiPDF.podeCompartilhar && window.VitalitiPDF.podeCompartilhar()),
+      pdfLabel: 'Baixar PDF',
       closePdf: () => this.setState({ pdfId: null }),
 
       modalOpen: !!m, modalTitle: !m ? '' : (m.tipo === 'cliente' ? (m.id ? 'Editar cliente' : 'Novo cliente') : (m.id ? 'Editar serviço' : 'Novo serviço')),

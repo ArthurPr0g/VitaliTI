@@ -332,37 +332,65 @@
   var logoPronta = null;
   carregarLogo('assets/logo-vitaliti-clean.png').then(function (img) { logoPronta = img; });
 
+  /* Baixar e compartilhar são ações SEPARADAS, e não duas saídas da mesma.
+     Quando a mesma função tentava compartilhar antes de salvar, o Windows 11
+     atendia `canShare({files})` e abria a folha de compartilhamento do
+     sistema — que não tem opção de salvar arquivo. Resultado: no desktop não
+     havia como obter o PDF. Agora quem decide é o botão que o usuário
+     apertou. */
+
+  function temShareDeArquivo() {
+    try {
+      if (!(w.navigator && navigator.share && navigator.canShare)) return false;
+      var t = new File([new Blob([], { type: 'application/pdf' })],
+                       't.pdf', { type: 'application/pdf' });
+      return !!navigator.canShare({ files: [t] });
+    } catch (e) { return false; }
+  }
+
   w.VitalitiPDF = {
-    abrir: function (p) {
+    /* Salva sempre. Nunca abre folha de compartilhamento. */
+    baixar: function (p) {
+      var doc = gerar(p, logoPronta);
+      doc.save(nomeArquivo(p));
+      return doc.getNumberOfPages();
+    },
+
+    /* Compartilha o ARQUIVO, não um link.
+       doc.save() cria uma URL blob: e dispara download; no celular a folha
+       de compartilhamento capturava essa URL e mandava junto com a
+       mensagem no WhatsApp. Aqui o PDF vai como anexo.
+       Nada de `text` nem `url` no share: qualquer um dos dois vira texto
+       na mensagem, que é exatamente o que se quer evitar.
+
+       Precisa ser chamado dentro do gesto do usuário: nada de await antes. */
+    compartilhar: function (p) {
       var doc = gerar(p, logoPronta);
       var nome = nomeArquivo(p);
-      var blob = doc.output('blob');
 
-      /* Compartilha o ARQUIVO, não um link.
-         doc.save() cria uma URL blob: e dispara download; no celular a folha
-         de compartilhamento capturava essa URL e mandava junto com a
-         mensagem no WhatsApp. Aqui o PDF vai como anexo.
-         Nada de `text` nem `url` no share: qualquer um dos dois vira texto
-         na mensagem, que é exatamente o que se quer evitar. */
-      try {
-        if (w.navigator && navigator.canShare) {
-          var arq = new File([blob], nome, { type: 'application/pdf' });
-          if (navigator.canShare({ files: [arq] })) {
-            return navigator.share({ files: [arq] })
-              .then(function () { return doc.getNumberOfPages(); })
-              .catch(function (e) {
-                // Cancelar o compartilhamento não é erro.
-                if (e && e.name === 'AbortError') return doc.getNumberOfPages();
-                doc.save(nome);
-                return doc.getNumberOfPages();
-              });
-          }
-        }
-      } catch (e) { /* cai no download abaixo */ }
+      if (!temShareDeArquivo()) {   // sem Web Share, o que dá para fazer é baixar
+        doc.save(nome);
+        return Promise.resolve(doc.getNumberOfPages());
+      }
 
-      doc.save(nome);   // desktop e navegadores sem Web Share
-      return Promise.resolve(doc.getNumberOfPages());
+      var arq = new File([doc.output('blob')], nome, { type: 'application/pdf' });
+      return navigator.share({ files: [arq] })
+        .then(function () { return doc.getNumberOfPages(); })
+        .catch(function (e) {
+          // Cancelar o compartilhamento não é erro, e não deve virar download.
+          if (e && e.name === 'AbortError') return doc.getNumberOfPages();
+          doc.save(nome);
+          return doc.getNumberOfPages();
+        });
     },
+
+    podeCompartilhar: temShareDeArquivo,
+
+    // Mantido para uma aba antiga que tenha o HTML anterior em cache: ali o
+    // único botão era "Baixar / Compartilhar", e baixar é o comportamento
+    // que faltava.
+    abrir: function (p) { return w.VitalitiPDF.baixar(p); },
+
     gerar: function (p, logo) { return gerar(p, logo === undefined ? logoPronta : logo); },
     nomeArquivo: nomeArquivo
   };

@@ -209,6 +209,35 @@ curl https://yolakwvyxeiubfditiig.supabase.co/auth/v1/settings
 artificial com requisições periódicas é paliativo e não há garantia de que
 segure indefinidamente.
 
+### 3.10 Baixar e compartilhar não podem sair do mesmo botão
+
+Havia um botão só, "Baixar / Compartilhar PDF", e a função tentava
+`navigator.share` primeiro, caindo para `doc.save()` quando não houvesse
+suporte. A lógica parece razoável e funciona no celular.
+
+No Windows 11 não. O Edge e o Chrome atendem `canShare({files})`, então abria a
+folha de compartilhamento do sistema — **que não tem opção de salvar arquivo**.
+O usuário via a janela do Windows com WhatsApp, Outlook e Teams, e não havia
+caminho nenhum para obter o PDF.
+
+Agora são duas ações independentes, e quem escolhe é o botão apertado:
+
+- `VitalitiPDF.baixar(p)` — sempre `doc.save()`, nunca compartilha.
+- `VitalitiPDF.compartilhar(p)` — sempre a folha; sem suporte, cai para salvar.
+- `VitalitiPDF.podeCompartilhar()` — decide se o botão "Compartilhar" aparece.
+
+`VitalitiPDF.abrir()` continua existindo como apelido de `baixar()`, para uma
+aba que ainda tenha o HTML antigo em cache.
+
+`navigator.share` só funciona dentro do gesto do usuário: nada de `await`,
+`setState` ou promessa antes da chamada.
+
+**Ao testar download em navegador automatizado:** o Chrome bloqueia downloads
+automáticos repetidos na mesma página — o primeiro cai no disco e os seguintes
+viram `.tmp` pendente. Para medir o comportamento sem depender disso, troque
+`doc.save`. Ele é instalado na **instância**, não no protótipo do jsPDF, então o
+espião precisa envolver o construtor `window.jspdf.jsPDF`.
+
 ---
 
 ## 4. Modelo de dados
