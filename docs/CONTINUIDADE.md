@@ -153,6 +153,25 @@ sobrepõem. Cinco tentativas de resolver por CSS falharam antes disso.
 Se for mexer no layout do documento, é nesse arquivo — não no HTML da
 visualização (que serve só para conferir na tela).
 
+**No PDF nada empurra nada.** jsPDF desenha por coordenada: um texto mais alto
+que o espaço reservado não move o que vem depois, é coberto por ele. Toda
+altura de linha precisa ser calculada a partir do texto real, com
+`splitTextToSize`, antes de desenhar. Isso já falhou duas vezes — na observação
+do fecho e na descrição do serviço, onde a altura era fixa em 10mm e descrição
+de duas linhas ou mais sumia atrás da faixa "Total dos serviços".
+
+A visualização em HTML **não** reproduz esse tipo de falha: lá a tabela cresce
+sozinha. Conferir na tela não serve para validar o PDF.
+
+**Como testar o PDF sem passar pelo login:** monte uma página com
+`vendor/jspdf.umd.min.js` e `vitaliti-pdf.js`, chame `VitalitiPDF.gerar(p)` com
+um objeto `p` fabricado e jogue `doc.output('datauristring')` num `<iframe>`.
+Sirva a pasta com `npx serve` para os caminhos relativos da logo funcionarem.
+Inclua sempre um serviço sem descrição, um com uma linha e um com cinco — é
+onde os erros aparecem. E compare com a versão anterior do arquivo
+(`git show HEAD:vitaliti-pdf.js`) para confirmar que o teste realmente
+reproduzia o defeito.
+
 ### 3.9 O Supabase pausa sozinho e o painel some junto
 
 O plano Free pausa o projeto depois de um período sem atividade. Aconteceu em

@@ -176,16 +176,32 @@
       ];
       y = cabecalhoTabela(doc, y, colsS);
 
+      /* A altura da linha acompanha quantas linhas a descrição realmente
+         ocupa. Era fixa em 10mm, que só comporta uma linha: descrição maior
+         era desenhada abaixo do espaço reservado e a faixa "Total dos
+         serviços" — ou a linha seguinte — passava por cima dela. */
+      var LARG_DESC = L - 40;
+      var TAM_DESC = 7;
+      var ALT_DESC = TAM_DESC * 0.45;   // mesma conta que paragrafo() usa
+
       p.servicos.forEach(function (s) {
-        var temDesc = s.descricao && String(s.descricao).trim();
-        var altLinha = temDesc ? 10 : 7;
+        var desc = s.descricao && String(s.descricao).trim();
+        var nDesc = 0;
+        if (desc) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(TAM_DESC);
+          nDesc = doc.splitTextToSize(desc, LARG_DESC).length;
+        }
+        // 10mm é a linha com descrição de uma linha; cada linha extra soma a
+        // própria altura, preservando a mesma folga abaixo da última.
+        var altLinha = desc ? 10 + (nDesc - 1) * ALT_DESC : 7;
         if (y + altLinha > limite) { novaPagina(); y = cabecalhoTabela(doc, y, colsS); }
 
         texto(doc, s.n, M + 3, y + 4.6, { tam: 8, cor: CINZA });
         texto(doc, s.nome, M + 12, y + 4.6, { tam: 8.5, peso: 'bold' });
         texto(doc, s.valor, M + L - 3, y + 4.6, { tam: 8.5, peso: 'bold', al: 'right' });
-        if (temDesc) {
-          paragrafo(doc, s.descricao, M + 12, y + 8, L - 40, { tam: 7, cor: CINZA });
+        if (desc) {
+          paragrafo(doc, s.descricao, M + 12, y + 8, LARG_DESC, { tam: TAM_DESC, cor: CINZA });
         }
         y += altLinha;
         regua(doc, y);
