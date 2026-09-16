@@ -20,7 +20,26 @@ para descobrir e nenhuma é evidente lendo o código.
 
 **A conta do Supabase é `progimports01@gmail.com`, organização "Reserva".**
 Não é a mesma conta dos outros projetos. Isso já causou confusão: o conector
-MCP do Supabase aponta para outra organização e não enxerga este projeto.
+MCP do Supabase aponta para outra organização e não enxerga este projeto — ele
+responde "You do not have permission to perform this action" para este ref.
+
+**O projeto Supabase está no plano Free e pausa sozinho por inatividade.**
+Leia 3.9 antes de investigar qualquer falha de login ou de carregamento de
+dados depois de um período sem mexer no projeto.
+
+### Cópia local
+
+Não é necessária para o projeto funcionar — GitHub, Vercel e Supabase bastam.
+Quando quiser uma:
+
+```bash
+git clone https://github.com/ArthurPr0g/VitaliTI.git
+```
+
+O design system deste projeto foi extraído para
+[github.com/ArthurPr0g/design-systems](https://github.com/ArthurPr0g/design-systems)
+(privado), no diretório `vitaliti/`. Mudança de identidade visual deveria
+acontecer lá e vir para cá, não o contrário.
 
 ### Credenciais
 
@@ -133,6 +152,43 @@ sobrepõem. Cinco tentativas de resolver por CSS falharam antes disso.
 
 Se for mexer no layout do documento, é nesse arquivo — não no HTML da
 visualização (que serve só para conferir na tela).
+
+### 3.9 O Supabase pausa sozinho e o painel some junto
+
+O plano Free pausa o projeto depois de um período sem atividade. Aconteceu em
+setembro de 2026, depois de algumas semanas sem mexer no sistema.
+
+O sintoma engana. O site institucional continua **no ar**, porque é estático na
+Vercel e não depende do banco. Quem quebra é só o painel de gerenciamento:
+login, clientes e orçamentos param. Se o cliente disser "o site não abre",
+pergunte qual das duas páginas ele estava usando antes de procurar bug.
+
+O diagnóstico leva dez segundos e não precisa do painel do Supabase — com o
+projeto pausado, o host **deixa de existir no DNS**:
+
+```bash
+curl https://yolakwvyxeiubfditiig.supabase.co/auth/v1/settings
+```
+
+Se o nome não resolver, está pausado. Se responder 200, o banco está de pé e o
+problema é outro.
+
+**Conserto:** entrar no dashboard do Supabase com a conta `progimports01@gmail.com`
+e clicar em **Resume project**. Os dados ficam intactos — inclusive backups e
+storage. A retomada leva alguns minutos até o DNS voltar. Só abrir o projeto no
+dashboard já pode disparar a retomada.
+
+Depois de retomar, confirme que a trava de segurança sobreviveu (ver 3.5):
+
+```bash
+curl https://yolakwvyxeiubfditiig.supabase.co/auth/v1/settings
+```
+
+`disable_signup` tem que continuar `true`.
+
+**Para não repetir:** só o plano Pro elimina a pausa. Manter atividade
+artificial com requisições periódicas é paliativo e não há garantia de que
+segure indefinidamente.
 
 ---
 
