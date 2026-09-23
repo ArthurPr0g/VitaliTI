@@ -28,8 +28,10 @@
   body{ margin:0; font-family:'Manrope',sans-serif; -webkit-font-smoothing:antialiased; background:#f5f7fb; }
   a{ color:#1d4ed8; text-decoration:none; }
   a:hover{ color:#2f6bff; }
-  [data-theme="light"]{ --bg:#f4f7fc; --card:#ffffff; --soft:#f7f9fd; --line:#e6ecf5; --text:#0f2147; --muted:#6b7c99; --brand:#1d4ed8; --brand2:#2f6bff; --accent:#38bdf8; --shadow:0 18px 40px -28px rgba(15,33,71,.55); --side:#0b1729; --sideText:#c3d3ea; }
-  [data-theme="dark"]{ --bg:#070f1d; --card:#0e1a2f; --soft:#0b1527; --line:#1d2c49; --text:#e9effb; --muted:#8ea3c4; --brand:#2f6bff; --brand2:#4d84ff; --accent:#38bdf8; --shadow:0 18px 40px -26px rgba(0,0,0,.8); --side:#050c18; --sideText:#a9bcd8; }
+  /* --navVidro precisa de alfa: a barra inferior flutua sobre o conteúdo que
+     rola atrás dela, e var(--card) é opaco — mataria o efeito. */
+  [data-theme="light"]{ --bg:#f4f7fc; --card:#ffffff; --soft:#f7f9fd; --line:#e6ecf5; --text:#0f2147; --muted:#6b7c99; --brand:#1d4ed8; --brand2:#2f6bff; --accent:#38bdf8; --shadow:0 18px 40px -28px rgba(15,33,71,.55); --side:#0b1729; --sideText:#c3d3ea; --navVidro:rgba(255,255,255,.74); --navBorda:rgba(15,33,71,.09); --navSombra:0 18px 40px -20px rgba(8,17,33,.45), 0 3px 10px -6px rgba(8,17,33,.22); }
+  [data-theme="dark"]{ --bg:#070f1d; --card:#0e1a2f; --soft:#0b1527; --line:#1d2c49; --text:#e9effb; --muted:#8ea3c4; --brand:#2f6bff; --brand2:#4d84ff; --accent:#38bdf8; --shadow:0 18px 40px -26px rgba(0,0,0,.8); --side:#050c18; --sideText:#a9bcd8; --navVidro:rgba(16,29,52,.78); --navBorda:rgba(255,255,255,.10); --navSombra:0 20px 46px -20px rgba(0,0,0,.85), 0 3px 10px -6px rgba(0,0,0,.5); }
   input,select,textarea,button{ font-family:inherit; }
   input::placeholder,textarea::placeholder{ color:var(--muted); opacity:.75; }
   ::selection{ background:#2f6bff; color:#fff; }
@@ -128,6 +130,8 @@
 
   @media (prefers-reduced-motion:reduce){
     #vt-ptr .vt-ptr-marca, #vt-ptr .vt-no{ animation:none !important; }
+    .vt-botitem{ transition:none !important; }
+    .vt-botitem:active{ transform:none !important; }
   }
 
   /* A barra inferior so existe no mobile; no desktop quem navega e o #vt-side. */
@@ -136,16 +140,58 @@
   @media (max-width:900px){
     #vt-side{ display:none !important; }
 
+    /* Barra flutuante: descolada das bordas, em vidro, por cima do conteudo.
+       O `bottom` soma a safe-area do iPhone -- sem isso ela encosta na barra
+       de gestos e o toque e roubado pelo sistema. */
     #vt-botnav{
-      display:flex; position:fixed; left:0; right:0; bottom:0; z-index:60;
-      background:var(--card); border-top:1px solid var(--line);
-      /* padding-bottom acomoda a barra de gestos do iPhone, senao o ultimo
-         item fica embaixo dela e nao da para tocar. */
-      padding:0 4px calc(6px + env(safe-area-inset-bottom, 0px));
-      box-shadow:0 -6px 22px -14px rgba(8,17,33,.5);
+      display:flex; position:fixed; z-index:60;
+      left:max(12px, env(safe-area-inset-left, 0px));
+      right:max(12px, env(safe-area-inset-right, 0px));
+      bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+      gap:5px; padding:7px;
+      background:var(--navVidro);
+      border:1px solid var(--navBorda);
+      border-radius:24px;
+      box-shadow:var(--navSombra);
+      -webkit-backdrop-filter:blur(18px) saturate(150%);
+      backdrop-filter:blur(18px) saturate(150%);
     }
-    /* Espaco para o conteudo nao terminar embaixo da barra. */
-    #vt-main{ padding-bottom:74px; }
+    /* Sem suporte a blur, o fundo translucido deixaria o texto de tras
+       aparecer through a barra. Ali ela volta a ser opaca. */
+    @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+      #vt-botnav{ background:var(--card); }
+    }
+    /* A pilula desliza de um item para o outro com a curva do sistema; o
+       afundar no toque da o retorno tatil que o dedo espera. */
+    .vt-botitem{
+      transition:background .3s cubic-bezier(.16,1,.3,1), color .22s,
+                 box-shadow .3s cubic-bezier(.16,1,.3,1), transform .16s;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .vt-botitem:active{ transform:scale(.94); }
+    .vt-botitem:focus-visible{ outline:2px solid var(--brand2); outline-offset:2px; }
+
+    /* Telas de 320px (iPhone SE antigo). "Orcamentos" a 10.5px nao cabe em um
+       quarto da largura depois das margens, e a barra empurrava a pagina 35px
+       para o lado -- elemento com position:fixed entra no scrollWidth do
+       documento, entao a pagina inteira passava a rolar na horizontal. */
+    @media (max-width:360px){
+      #vt-botnav{
+        left:max(8px, env(safe-area-inset-left, 0px));
+        right:max(8px, env(safe-area-inset-right, 0px));
+        gap:2px; padding:5px; border-radius:20px;
+      }
+      .vt-botitem{ padding:8px 1px; border-radius:16px; gap:3px; }
+      .vt-botitem > span:last-child{ font-size:9.5px !important; letter-spacing:0 !important; }
+      #vt-main{ padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px)); }
+      /* "Anterior / 1 de 1 / Proxima" nao cabe numa linha: cortava o botao
+         Proxima pela metade. Empilha em vez de cortar. */
+      .vt-pag{ padding:14px 16px !important; }
+      .vt-pag > div:last-child{ width:100%; justify-content:space-between; }
+    }
+    /* Espaco para o conteudo nao terminar embaixo da barra. Agora ela flutua,
+       entao o vao e maior: altura do bloco + o respiro de baixo. */
+    #vt-main{ padding-bottom:calc(104px + env(safe-area-inset-bottom, 0px)); }
 
     /* O cabecalho tinha titulo + pilula Loja/Gerenciamento + tema + avatar +
        sair na mesma linha. No celular o titulo era espremido ate sumir.
@@ -164,8 +210,13 @@
     .vt-pill-atual{ display:none !important; }
 
     .vt-hidem{ display:none !important; }
-    .vt-grid4{ grid-template-columns:repeat(2,1fr) !important; }
-    .vt-grid2{ grid-template-columns:1fr !important; }
+    /* minmax(0,...) e nao `1fr` puro: `1fr` equivale a minmax(auto,1fr) e a
+       coluna nunca encolhe abaixo do conteudo. Com "R$ 15.500,00" em 26px o
+       KPI estourava a coluna e empurrava a PAGINA INTEIRA -- o documento
+       ficava mais largo que a tela e passava a rolar de lado em todas as
+       views, inclusive nas que nao tem KPI nenhum. */
+    .vt-grid4{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+    .vt-grid2{ grid-template-columns:minmax(0,1fr) !important; }
     .vt-login{ grid-template-columns:1fr !important; }
     .vt-loginart{ display:none !important; }
 
@@ -174,7 +225,11 @@
        do seu rotulo. */
     .vt-kpi{ padding:15px !important; }
     .vt-kpi-rot{ font-size:10.5px !important; letter-spacing:.3px !important; }
-    .vt-kpi-num{ font-size:26px !important; }
+    /* "Valor vendido" e o unico KPI que cresce sem limite. Fixo em 26px ele
+       nao cabia na coluna e, quebrando, separava os centavos numa segunda
+       linha ("R$ 15.500," / "00") -- feio e ilegivel de relance. Escalando
+       com a largura da tela, o numero fica inteiro numa linha so. */
+    .vt-kpi-num{ font-size:clamp(18px, 5.4vw, 26px) !important; overflow-wrap:break-word; }
     .vt-card{ padding:16px !important; }
     .vt-card-tit{ font-size:15px !important; }
     .vt-card-sub{ font-size:11.5px !important; }
@@ -452,10 +507,9 @@
        Dashboard. Fica fixa embaixo, ao alcance do polegar. -->
   <nav id="vt-botnav" aria-label="Navegação principal">
     <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
-      <button type="button" onClick="{{ n.on }}" aria-label="{{ n.label }}" style="background:none;border:0;cursor:pointer;color:{{ n.botColor }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex:1;padding:7px 2px 0;font-family:inherit">
-        <span style="width:21px;height:21px;display:block">{{ n.icon }}</span>
-        <span style="font-size:10.5px;font-weight:700;letter-spacing:.1px">{{ n.labelCurto }}</span>
-        <span style="display:block;width:20px;height:3px;border-radius:3px;background:{{ n.botBar }}"></span>
+      <button type="button" class="vt-botitem" onClick="{{ n.on }}" aria-label="{{ n.label }}" aria-current="{{ n.botAtual }}" style="background:{{ n.botBg }};box-shadow:{{ n.botSombra }};border:0;cursor:pointer;color:{{ n.botColor }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:1;min-width:0;padding:9px 4px;border-radius:17px;font-family:inherit">
+        <span style="width:21px;height:21px;display:block;flex:0 0 21px">{{ n.icon }}</span>
+        <span style="font-size:10.5px;font-weight:700;letter-spacing:.1px;white-space:nowrap">{{ n.labelCurto }}</span>
       </button>
     </sc-for>
   </nav>
@@ -672,9 +726,9 @@
               </div>
             </div>
           </sc-for>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px">
+          <div class="vt-pag" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;flex-wrap:wrap">
             <div style="color:var(--muted);font-size:13px">{{ cliCount }}</div>
-            <div style="display:flex;gap:6px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
               <button type="button" onClick="{{ cliPrev }}" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:9px;padding:8px 14px;font-size:13.5px;font-weight:700;cursor:pointer">Anterior</button>
               <span style="display:flex;align-items:center;padding:0 10px;font-size:13.5px;font-weight:700;color:var(--muted)">{{ cliPageLabel }}</span>
               <button type="button" onClick="{{ cliNext }}" style="border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:9px;padding:8px 14px;font-size:13.5px;font-weight:700;cursor:pointer">Próxima</button>
@@ -1758,8 +1812,13 @@ class Component extends DCLogic {
         // Rotulo curto para a barra inferior: "Configurações" nao cabe em
         // 1/4 da largura de um celular sem quebrar ou truncar feio.
         labelCurto: n[3],
-        botColor: active ? 'var(--brand2)' : 'var(--muted)',
-        botBar: active ? 'var(--brand2)' : 'transparent'
+        // Na barra flutuante o ativo vira uma pílula com o gradiente da marca,
+        // no lugar do tracinho de antes: lido de relance, sem depender de uma
+        // marca de 3px de altura.
+        botColor: active ? '#fff' : 'var(--muted)',
+        botBg: active ? 'linear-gradient(135deg,#1d4ed8,#2f6bff)' : 'transparent',
+        botSombra: active ? '0 10px 20px -12px rgba(29,78,216,.95)' : 'none',
+        botAtual: active ? 'page' : 'false'
       };
     });
 

@@ -238,6 +238,30 @@ viram `.tmp` pendente. Para medir o comportamento sem depender disso, troque
 `doc.save`. Ele é instalado na **instância**, não no protótipo do jsPDF, então o
 espião precisa envolver o construtor `window.jspdf.jsPDF`.
 
+### 3.10.1 `1fr` numa grade estoura a página inteira no celular
+
+`grid-template-columns:repeat(2,1fr)` parece seguro e não é: `1fr` equivale a
+`minmax(auto,1fr)`, e o `auto` impede a coluna de encolher abaixo do conteúdo.
+O KPI "Valor vendido" com `R$ 15.500,00` em 26px não cabia na metade de um
+celular, a coluna estourava, o documento ficava 35px mais largo que a tela e
+**todas** as views passavam a rolar na horizontal — inclusive as que não têm
+KPI nenhum, porque o que rola é a página.
+
+O sintoma engana duas vezes. Primeiro, qualquer elemento `position:fixed` com
+`left`/`right` se estica junto, então a barra inferior e o indicador de
+"puxar para atualizar" aparecem como culpados na inspeção, sem serem. Segundo,
+o problema só some quando se acha a grade, lá no topo da árvore.
+
+Para achar a origem: procure o elemento mais interno cujo `scrollWidth` supera
+o `clientWidth`, ignorando quem tem `overflow-x` próprio. Esconder um suspeito
+e reconferir `document.documentElement.scrollWidth` descarta falso culpado em
+um passo.
+
+A correção é `minmax(0,1fr)` nas colunas. Quebrar o texto com `overflow-wrap`
+resolve o estouro mas parte o valor no meio (`R$ 15.500,` / `00`): o número
+grande escala com a tela via `clamp()`, e só acima de R$ 1 milhão ele usa duas
+linhas — o card cresce, nunca corta.
+
 ### 3.11 Como abrir o painel sem login, para testar
 
 O gerenciamento só renderiza depois de autenticar no Supabase, o que trava
