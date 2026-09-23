@@ -238,6 +238,35 @@ viram `.tmp` pendente. Para medir o comportamento sem depender disso, troque
 `doc.save`. Ele é instalado na **instância**, não no protótipo do jsPDF, então o
 espião precisa envolver o construtor `window.jspdf.jsPDF`.
 
+### 3.11 Como abrir o painel sem login, para testar
+
+O gerenciamento só renderiza depois de autenticar no Supabase, o que trava
+qualquer teste de tela. A saída é trocar **só a camada de dados** do `VS`,
+mantendo o painel inteiro rodando de verdade:
+
+1. Copie `Gerenciamento.dc.html` para um arquivo temporário e insira
+   `<script src="./_stub.js"></script>` logo depois da tag do
+   `vitaliti-store.js`.
+2. No `_stub.js`, sobrescreva `VS.init` (devolve `{ session }` de mentira),
+   `VS.load` e `VS.reload` (devolvem um banco sintético), mais `VS.session`,
+   `VS.can`, `VS.onError`, `VS.persist` e `VS.logAction` como no-ops. Deixe
+   `brl`, `monthLabel`, `quoteParts` e `quoteTotals` intactos — são eles que
+   você quer exercitar.
+3. O stub **precisa** de guarda de idempotência: ele está no bloco `helmet` e
+   é reexecutado a cada render (ver 3.1).
+4. Sirva a pasta com `npx serve` e abra o arquivo temporário.
+5. Apague o arquivo temporário e o stub antes de commitar. A raiz do
+   repositório é servida como site: qualquer arquivo ali fica público.
+
+O formato do banco sintético é `{ clients, quotes, services, activity,
+settings }`. Em `quotes`, `data` é ISO `aaaa-mm-dd` e `itens` é
+`{ servicos: [{nome, valor, descricao}], produtos: [{nome, qtd, valor}] }`.
+
+**Em `localhost` o painel redireciona para o login do Google** em vez de
+mostrar a tela de entrada. Não é defeito do código — a versão publicada faz o
+mesmo — mas é o motivo de o stub existir: sem ele não há como ver o painel
+localmente.
+
 ---
 
 ## 4. Modelo de dados
