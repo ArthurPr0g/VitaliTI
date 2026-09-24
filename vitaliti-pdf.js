@@ -183,8 +183,19 @@
       var LARG_DESC = L - 40;
       var TAM_DESC = 7;
       var ALT_DESC = TAM_DESC * 0.45;   // mesma conta que paragrafo() usa
+      /* O nome também precisa de largura limitada: texto() desenha a string
+         inteira numa linha só, então nome comprido atravessava por cima da
+         coluna VALOR. Aqui ele para antes dela e quebra. */
+      var TAM_NOME = 8.5;
+      var ALT_NOME = TAM_NOME * 0.45;
+      var LARG_NOME = L - 44;
 
       p.servicos.forEach(function (s) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(TAM_NOME);
+        var nNome = Math.max(1, doc.splitTextToSize(String(s.nome == null ? '' : s.nome), LARG_NOME).length);
+        var extraNome = (nNome - 1) * ALT_NOME;
+
         var desc = s.descricao && String(s.descricao).trim();
         var nDesc = 0;
         if (desc) {
@@ -192,16 +203,17 @@
           doc.setFontSize(TAM_DESC);
           nDesc = doc.splitTextToSize(desc, LARG_DESC).length;
         }
-        // 10mm é a linha com descrição de uma linha; cada linha extra soma a
-        // própria altura, preservando a mesma folga abaixo da última.
-        var altLinha = desc ? 10 + (nDesc - 1) * ALT_DESC : 7;
+        // 10mm é a linha com nome e descrição de uma linha cada; cada linha
+        // extra soma a própria altura, preservando a folga abaixo da última.
+        var altLinha = (desc ? 10 + (nDesc - 1) * ALT_DESC : 7) + extraNome;
         if (y + altLinha > limite) { novaPagina(); y = cabecalhoTabela(doc, y, colsS); }
 
         texto(doc, s.n, M + 3, y + 4.6, { tam: 8, cor: CINZA });
-        texto(doc, s.nome, M + 12, y + 4.6, { tam: 8.5, peso: 'bold' });
-        texto(doc, s.valor, M + L - 3, y + 4.6, { tam: 8.5, peso: 'bold', al: 'right' });
+        paragrafo(doc, s.nome, M + 12, y + 4.6, LARG_NOME, { tam: TAM_NOME, peso: 'bold' });
+        texto(doc, s.valor, M + L - 3, y + 4.6, { tam: TAM_NOME, peso: 'bold', al: 'right' });
         if (desc) {
-          paragrafo(doc, s.descricao, M + 12, y + 8, LARG_DESC, { tam: TAM_DESC, cor: CINZA });
+          // A descrição desce junto quando o nome ocupa mais de uma linha.
+          paragrafo(doc, s.descricao, M + 12, y + 8 + extraNome, LARG_DESC, { tam: TAM_DESC, cor: CINZA });
         }
         y += altLinha;
         regua(doc, y);
@@ -225,14 +237,27 @@
       if (y + 20 > limite) novaPagina();
       y = cabecalhoTabela(doc, y, colsP);
 
+      /* O nome do produto ia até onde o texto terminasse e atravessava as
+         colunas QTD e UNITÁRIO — nomes de equipamento costumam ser longos.
+         A largura para antes da coluna QTD e o nome quebra em linhas. */
+      var TAM_PROD = 8;
+      var ALT_PROD = TAM_PROD * 0.45;
+      var LARG_PROD = L - 82;
+
       p.produtos.forEach(function (x) {
-        if (y + 5.8 > limite) { novaPagina(); y = cabecalhoTabela(doc, y, colsP); }
-        texto(doc, x.n, M + 3, y + 4.3, { tam: 8, cor: CINZA });
-        texto(doc, x.nome, M + 12, y + 4.3, { tam: 8 });
-        texto(doc, x.qtd, M + L - 62, y + 4.3, { tam: 8, al: 'center' });
-        texto(doc, x.valor, M + L - 30, y + 4.3, { tam: 8, al: 'right' });
-        texto(doc, x.subtotal, M + L - 3, y + 4.3, { tam: 8, peso: 'bold', al: 'right' });
-        y += 5.8;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(TAM_PROD);
+        var nNome = Math.max(1, doc.splitTextToSize(String(x.nome == null ? '' : x.nome), LARG_PROD).length);
+        var altLinha = 5.8 + (nNome - 1) * ALT_PROD;
+        if (y + altLinha > limite) { novaPagina(); y = cabecalhoTabela(doc, y, colsP); }
+
+        texto(doc, x.n, M + 3, y + 4.3, { tam: TAM_PROD, cor: CINZA });
+        paragrafo(doc, x.nome, M + 12, y + 4.3, LARG_PROD, { tam: TAM_PROD });
+        // Qtd, unitário e total ficam na primeira linha, alinhados ao nome.
+        texto(doc, x.qtd, M + L - 62, y + 4.3, { tam: TAM_PROD, al: 'center' });
+        texto(doc, x.valor, M + L - 30, y + 4.3, { tam: TAM_PROD, al: 'right' });
+        texto(doc, x.subtotal, M + L - 3, y + 4.3, { tam: TAM_PROD, peso: 'bold', al: 'right' });
+        y += altLinha;
         regua(doc, y);
       });
 

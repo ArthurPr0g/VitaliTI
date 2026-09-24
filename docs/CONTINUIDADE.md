@@ -153,12 +153,25 @@ sobrepõem. Cinco tentativas de resolver por CSS falharam antes disso.
 Se for mexer no layout do documento, é nesse arquivo — não no HTML da
 visualização (que serve só para conferir na tela).
 
-**No PDF nada empurra nada.** jsPDF desenha por coordenada: um texto mais alto
-que o espaço reservado não move o que vem depois, é coberto por ele. Toda
-altura de linha precisa ser calculada a partir do texto real, com
-`splitTextToSize`, antes de desenhar. Isso já falhou duas vezes — na observação
-do fecho e na descrição do serviço, onde a altura era fixa em 10mm e descrição
-de duas linhas ou mais sumia atrás da faixa "Total dos serviços".
+**No PDF nada empurra nada, nem para baixo nem para o lado.** jsPDF desenha por
+coordenada: um texto maior que o espaço reservado não move o que vem depois —
+atropela. Vale para as duas dimensões, e já falhou nas duas:
+
+- **Altura**: a observação do fecho e a descrição do serviço tinham altura fixa
+  de 10mm, que só comporta uma linha. Com duas ou mais, o texto sumia atrás da
+  faixa "Total dos serviços".
+- **Largura**: `texto()` desenha a string inteira numa linha só, sem limite. O
+  nome de um produto real atravessou 32mm por cima das colunas QTD e UNITÁRIO;
+  um nome ainda maior terminaria em 243mm, fora da folha de 210mm.
+
+A regra vale para todo campo alimentado pelo usuário: use `paragrafo()` com a
+largura da coluna, e derive a altura da linha de `splitTextToSize` **antes** de
+desenhar. `texto()` só serve para conteúdo de tamanho conhecido — número,
+valor, data, rótulo fixo.
+
+Ao conferir, meça em vez de só olhar: `doc.getTextWidth(linha)` somado ao x
+inicial diz onde o texto termina, e a coluna seguinte diz onde ela começa. Se o
+primeiro passar do segundo, sobrepõe — não importa o que a tela parecer mostrar.
 
 A visualização em HTML **não** reproduz esse tipo de falha: lá a tabela cresce
 sozinha. Conferir na tela não serve para validar o PDF.
