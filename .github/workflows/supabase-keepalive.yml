@@ -1,0 +1,96 @@
+# Mantém o projeto Supabase fora da pausa automática.
+#
+# O plano Free pausa projetos com pouca atividade de banco numa janela de 7
+# dias. Não é um contador que zera a cada acesso: a Supabase avalia se houve
+# consulta suficiente ao longo da semana anterior, e o que ela indica como
+# suficiente são algumas requisições ao banco POR DIA. Por isso este workflow
+# roda diariamente, e não uma vez por semana.
+#
+# Nada aqui toca o código do site nem o banco: são só leituras.
+
+name: Manter o Supabase ativo
+
+on:
+  schedule:
+    # 11:17 UTC = 08:17 em Brasília. O minuto quebrado é de propósito: o
+    # GitHub enfileira (e às vezes descarta) agendamentos em horários
+    # redondos, quando todo mundo agenda.
+    - cron: '17 11 * * *'
+  # Permite rodar na mão pelo botão "Run workflow", para testar.
+  workflow_dispatch:
+
+# Sem permissões de escrita: o job só faz requisições de leitura.
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Consultar o banco
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      # A chave publishable é pública por definição — ela já vai no bundle que
+      # o navegador baixa, em vitaliti-config.js. Quem protege os dados é o
+      # RLS. Por isso não precisa ser secret. A chave `service_role` NUNCA
+      # deve entrar aqui.
+      SUPABASE_URL: https://yolakwvyxeiubfditiig.supabase.co
+      SUPABASE_KEY: sb_publishable_DUsXo2yR52mD3zVQVh5i5A_hSTSb3zD
+
+    steps:
+      - name: O projeto está de pé?
+        run: |
+          # Com o projeto pausado, o host deixa de existir no DNS. Este passo
+          # separa "pausado" de "algo mais deu errado" — sem ele, qualquer
+          # falha viraria o mesmo erro genérico.
+          host="$(echo "$SUPABASE_URL" | sed -e 's|^https\?://||' -e 's|/.*$||')"
+          if ! getent hosts "$host" > /dev/null; then
+            echo "::error::$host não resolve no DNS — o projeto Supabase está PAUSADO."
+            echo "Retome em https://supabase.com/dashboard (conta progimports01@gmail.com, org Reserva)."
+            exit 1
+          fi
+          echo "$host resolve. Projeto no ar."
+
+      - name: Consultar o catálogo via PostgREST
+        run: |
+          # A raiz do PostgREST monta a resposta consultando o catálogo do
+          # Postgres, então é uma leitura de banco de verdade — e não precisa
+          # de usuário autenticado.
+          codigo=$(curl -sS -o /tmp/raiz.json -w '%{http_code}' \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            "$SUPABASE_URL/rest/v1/")
+          echo "GET /rest/v1/ -> HTTP $codigo"
+          if [ "$codigo" -ge 500 ]; then
+            echo "::error::PostgREST respondeu $codigo."
+            exit 1
+          fi
+
+      - name: Consultar uma tabela real
+        run: |
+          # `anon` não tem privilégio no schema public, então a resposta
+          # esperada é 401/404 — e está certo assim: o que interessa é que a
+          # consulta chegou ao Postgres. Um 200 aqui seria MOTIVO DE ALARME,
+          # porque significaria que anônimo consegue ler a base.
+          codigo=$(curl -sS -o /tmp/tabela.json -w '%{http_code}' \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            "$SUPABASE_URL/rest/v1/clients?select=id&limit=1")
+          echo "GET /rest/v1/clients -> HTTP $codigo"
+          if [ "$codigo" = "200" ]; then
+            echo "::error::anon conseguiu LER a tabela clients. O RLS está aberto — verifique agora."
+            exit 1
+          fi
+
+      - name: Conferir a trava de cadastro
+        run: |
+          # disable_signup é o que sustenta a segurança do sistema: com a
+          # chave publishable sendo pública, cadastro aberto deixaria qualquer
+          # pessoa virar usuário autenticado. Ver CONTINUIDADE.md 3.5.
+          corpo=$(curl -sS -H "apikey: $SUPABASE_KEY" "$SUPABASE_URL/auth/v1/settings")
+          if echo "$corpo" | grep -q '"disable_signup":true'; then
+            echo "disable_signup = true. Trava no lugar."
+          else
+            echo "::error::disable_signup NÃO está true — qualquer um pode se cadastrar."
+            exit 1
+          fi
