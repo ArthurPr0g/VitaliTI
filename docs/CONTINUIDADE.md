@@ -218,9 +218,27 @@ curl https://yolakwvyxeiubfditiig.supabase.co/auth/v1/settings
 
 `disable_signup` tem que continuar `true`.
 
-**Para não repetir:** só o plano Pro elimina a pausa. Manter atividade
-artificial com requisições periódicas é paliativo e não há garantia de que
-segure indefinidamente.
+**O que mantém o projeto vivo hoje:** o workflow
+`.github/workflows/supabase-keepalive.yml`, que roda todo dia e faz uma
+consulta autenticada ao banco.
+
+Dois detalhes que custaram para descobrir:
+
+- **Não é um contador que zera a cada acesso.** A Supabase avalia uma janela
+  deslizante de 7 dias e espera algumas consultas ao banco *por dia* ao longo
+  da semana. Um acesso semanal é frágil justamente por isso.
+- **Requisição anônima não serve.** Com o RLS correto, `anon` leva 401 em
+  `/rest/v1/` e nas tabelas, e um 401 pode ser recusado antes de chegar ao
+  Postgres. Por isso o workflow autentica com um usuário dedicado
+  (secrets `SUPABASE_EMAIL` e `SUPABASE_PASSWORD` no repositório) e lê a
+  tabela `clients`, o que responde 200 e é consulta de verdade.
+
+O mesmo workflow serve de alarme: falha se o host sumir do DNS, se `anon`
+conseguir ler alguma tabela ou se `disable_signup` deixar de ser `true`.
+
+**Para resolver de vez:** só o plano Pro elimina a pausa. O workflow administra
+o sintoma e depende do GitHub Actions continuar rodando — agendamentos são
+desativados em repositórios sem commits por 60 dias.
 
 ### 3.10 Baixar e compartilhar não podem sair do mesmo botão
 
