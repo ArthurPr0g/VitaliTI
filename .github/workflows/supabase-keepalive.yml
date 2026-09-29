@@ -82,6 +82,56 @@ jobs:
             exit 1
           fi
 
+      - name: Consulta autenticada (só se os secrets existirem)
+        # As leituras acima voltam 401, porque `anon` não tem privilégio
+        # nenhum no schema public. É o comportamento correto do ponto de
+        # vista de segurança, mas deixa dúvida se a Supabase conta isso como
+        # "atividade de banco" — um 401 pode ser recusado antes de chegar ao
+        # Postgres.
+        #
+        # Este passo remove a dúvida: autentica como um usuário de verdade e
+        # lê uma tabela, o que é inequivocamente consulta ao banco. Ele só
+        # roda se os dois secrets existirem, então o workflow continua
+        # funcionando sem eles.
+        #
+        # Para ativar: crie um usuário dedicado no painel do Supabase
+        # (Authentication > Users > Add user), e cadastre em
+        # Settings > Secrets and variables > Actions do repositório:
+        #   SUPABASE_EMAIL  e  SUPABASE_PASSWORD
+        env:
+          EMAIL: ${{ secrets.SUPABASE_EMAIL }}
+          SENHA: ${{ secrets.SUPABASE_PASSWORD }}
+        run: |
+          if [ -z "$EMAIL" ] || [ -z "$SENHA" ]; then
+            echo "Secrets não configurados — pulando a consulta autenticada."
+            echo "Só as leituras anônimas acima geraram atividade."
+            exit 0
+          fi
+
+          token=$(curl -sS -X POST \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"$EMAIL\",\"password\":\"$SENHA\"}" \
+            "$SUPABASE_URL/auth/v1/token?grant_type=password" \
+            | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+
+          if [ -z "$token" ]; then
+            echo "::error::Login falhou. Confira SUPABASE_EMAIL e SUPABASE_PASSWORD."
+            exit 1
+          fi
+          echo "Autenticado."
+
+          codigo=$(curl -sS -o /tmp/auth.json -w '%{http_code}' \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $token" \
+            "$SUPABASE_URL/rest/v1/clients?select=id&limit=1")
+          echo "GET /rest/v1/clients autenticado -> HTTP $codigo"
+          if [ "$codigo" != "200" ]; then
+            echo "::error::A consulta autenticada devia responder 200 e respondeu $codigo."
+            exit 1
+          fi
+          echo "Consulta ao banco concluída — esta conta como atividade real."
+
       - name: Conferir a trava de cadastro
         run: |
           # disable_signup é o que sustenta a segurança do sistema: com a
