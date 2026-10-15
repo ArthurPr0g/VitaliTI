@@ -1,0 +1,42 @@
+# Mantém o repositório "ativo" para o GitHub não desligar os agendamentos.
+#
+# Em repositório público, o GitHub DESLIGA sozinho os workflows agendados
+# (como o "Manter o Supabase ativo") quando o repositório passa 60 dias sem
+# atividade. O keepalive do Supabase só faz leituras, então não conta: sem
+# commit nenhum, ele pararia em silêncio e o banco voltaria a pausar.
+#
+# Uma vez por mês este workflow grava a data em .github/atividade.txt e faz
+# commit. Um commit por mês deixa folga de sobra contra o limite de 60 dias,
+# mesmo se o GitHub pular uma execução.
+
+name: Manter o repositório ativo
+
+on:
+  schedule:
+    # Dia 1 de cada mês, 12:23 UTC (09:23 em Brasília). Minuto quebrado de
+    # propósito: horários redondos são os que o GitHub atrasa ou descarta.
+    - cron: '23 12 1 * *'
+  # Botão "Run workflow", para testar na hora.
+  workflow_dispatch:
+
+# Precisa escrever no repositório para fazer o commit
+permissions:
+  contents: write
+
+jobs:
+  commit:
+    name: Registrar atividade do mês
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gravar a data e fazer commit
+        run: |
+          date -u '+%Y-%m-%d %H:%M UTC' > .github/atividade.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/atividade.txt
+          git commit -m "Atividade mensal automática (mantém os agendamentos do GitHub ligados)"
+          git push
