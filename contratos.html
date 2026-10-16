@@ -31,6 +31,17 @@
   .ct .note { background:#eef3ff; border:1px solid #cfe0fb; border-radius:8px; padding:12px 16px; font-size:9.5pt; color:#334; margin:0 0 22px; break-inside:avoid; }
   .brandbar { display:flex; align-items:center; gap:10px; padding-bottom:8px; border-bottom:2px solid #0f2147; margin-bottom:20px; }
   .brandbar .wm { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15pt; color:#0f2147; }
+
+/* ---- Celular: sem zoom que "gruda" ----
+   O iPhone amplia a tela ao tocar num campo com letra menor que 16px e não
+   volta ao sair dele; e o toque duplo rápido num botão vira zoom. Campo com
+   16px em tela de toque e touch-action: manipulation nos clicáveis resolvem as
+   duas coisas sem bloquear o zoom de pinça (acessibilidade). :where() deixa a
+   regra com peso zero: qualquer touch-action próprio de um componente vence. */
+@media (pointer: coarse) {
+  input, select, textarea { font-size: 16px !important; }
+}
+:where(a, button, input, select, textarea, label, summary, [role="button"]) { touch-action: manipulation; }
 </style>
 </helmet>
 
