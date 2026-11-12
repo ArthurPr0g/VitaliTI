@@ -21,4 +21,6 @@ Modelo do cartão (1ª cópia; na 2ª, o `div` de fora leva também `aria-hidden
           <div style="position:absolute;left:18px;bottom:16px"><div style="font-weight:800;font-size:17px">Nome do Cliente</div><div style="color:#9fb2cf;font-size:12.5px">Ramo ou descrição curta</div></div>
         </div>
 ```
+Não tire a regra `.cli-track > div { width: ... }` do `<style>`: sem ela o Safari mede a faixa pela largura natural das fotos e a seção fica vazia no iPhone durante parte de cada volta (corrigido em 12/11/2026).
+
 Foto: `assets/cliente-<nome-em-minusculas-com-hifen>.jpg`, recorte 4:3 centralizado, 800x600, JPEG de até ~150 KB (ex.: `ffmpeg -i entrada -vf "scale=800:600:force_original_aspect_ratio=increase,crop=800:600" -q:v 4 assets/cliente-x.jpg`). Olhe o resultado antes de publicar (nada importante cortado). O nome e a linha de baixo são os que o cliente confirmou; não invente.

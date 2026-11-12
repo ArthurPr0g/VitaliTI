@@ -121,7 +121,15 @@
   @keyframes glow2 { 0%,100% { opacity: .4; transform: translate(0,0) scale(1); } 50% { opacity: .7; transform: translate(-24px,18px) scale(1.15); } }
   @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   .cli-feed:hover .cli-track { animation-play-state: paused; }
-  @media (max-width: 640px) { .cli-track > div { flex-basis: 78vw !important; } }
+  /* Largura explicita dos cartoes do carrossel de clientes.
+     O Safari (WebKit) calcula a largura da faixa (width:max-content) pela
+     largura natural de cada foto (800 a 1224px), ignorando o flex-basis.
+     A faixa ficava com ~37700px em vez de ~13000px, o translateX(-50%)
+     passava do fim dos cartoes e a secao ficava vazia por ~30s a cada
+     volta no iPhone. Com width igual ao flex-basis, Safari e Chrome
+     medem igual. */
+  .cli-track > div { width: 340px; min-width: 0; }
+  @media (max-width: 640px) { .cli-track > div { flex-basis: 78vw !important; width: 78vw; } }
 
   /* Topo no celular.
      A grade era 1.05fr .95fr sem nenhum breakpoint: a coluna da imagem
